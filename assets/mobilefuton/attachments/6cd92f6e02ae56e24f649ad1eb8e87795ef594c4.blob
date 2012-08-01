@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width,minimum-scale=1,maximum-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <title>Mobile Futon</title>
+
+    <link rel="apple-touch-icon-precomposed" href="./img/icon72.png"/>
+    <link rel="stylesheet" href="css/main.css">
+
+  </head>
+
+  <body><div id="wrapper">
+
+    <div id="header">
+      <a id="home" class="plain_btn" href="#/">&lt;</a>
+      <h1 id="title">Mobile Futon</h1>
+      <div id="user">&nbsp;</div>
+      <div id="user_panel"></div>
+    </div>
+
+    <div id="content"></div>
+
+    <script type="text/html" id="home_tpl">
+      <table class="info">
+        <tr><td class="info_label">Version:</td><td>{{version}}</td></tr>
+        <tr><td class="info_label">Host:</td><td>{{ip}}:{{port}}/</td></tr>
+      </table>
+      <ul>
+        <li><a href="#/db/">Databases
+            <span class="arrow right">›</span></a></li>
+        <li><a href="#/replication/">Replication
+            <span class="arrow right">›</span></a></li>
+        <li><a href="#/tasks/">Active Tasks
+            <span class="arrow right">›</span></a></li>
+        <li><a href="#/couchapps/">CouchApps
+            <span class="arrow right">›</span></a></li>
+        <li><a href="#/config/">Config
+            <span class="arrow right">›</span></a></li>
+      </ul>
+
+      {{#adminparty}}
+      <p class="adminparty">You are currently in Admin Party! </p>
+      {{/adminparty}}
+    </script>
+
+
+    <script type="text/html" id="replication_doc_tpl">
+      <div style="text-align:center; margin: 15px 0px;">
+      <h3 id="repl_doc" >
+        {{#error}}<span class="error repl_status">!</span>{{/error}}
+        {{#paused}}<span class="completed repl_status">✔</span>{{/paused}}
+        {{#triggered}}<span class="running repl_status">✔</span>{{/triggered}}
+        {{source}} -> {{target}}
+      </h3>
+      </div>
+      <ul>
+        <li class="header">Replication Document</li>
+        {{#keys}}
+        <li><span>{{key}}:<span class="right padded">{{value}}</span></span></li>
+        {{/keys}}
+      </ul>
+      <div style="padding:10px;">
+        {{#paused}}
+        <form action="#toggle_replication">
+          <input type="hidden" name="id" value="{{_id}}" />
+          <input type="submit" value="Rerun Replication" />
+        </form><br />
+        {{/paused}}
+        <form action="#delete_replication">
+          <input type="hidden" name="rev" value="{{_rev}}" />
+          <input type="hidden" name="id" value="{{_id}}" />
+          <input type="submit" value="Delete" class="warning" />
+        </form>
+      </div>
+    </script>
+
+
+    <script type="text/html" id="config_top_tpl">
+      <ul>
+        <li class="header">Sections</li>
+        {{#config}}
+        <li><a href="#/config/{{.}}/">{{.}}<span class="arrow right">›</span></a></li>
+        {{/config}}
+      </ul>
+    </script>
+
+
+    <script type="text/html" id="config_section_tpl">
+     <form action="#config" id="config">
+        <input type="hidden" name="section" value="{{{section}}}" />
+        <ul>
+          <li class="header">{{section}}</li>
+          {{#items}}
+          <li><label>{{key}}<br /><div class="inputwrap">
+                <input type="text" name="{{{key}}}" value="{{{value}}}" />
+          </div></label></li>
+          {{/items}}
+        </ul>
+        <div style="padding:10px;">
+          <input type="submit" value="Save Config" id="saveconfig" />
+        </div>
+      </form>
+    </script>
+
+
+    <script type="text/html" id="tasks_tpl">
+      <ul id="tasks">
+        {{#tasks}}
+        <li>
+          <table>
+            <tr><td class="label">Pid:</td><td>{{pid}}</td></tr>
+            <tr><td class="label">Type:</td><td>{{type}}</td></tr>
+          </table>
+        </li>
+        {{/tasks}}
+        {{^tasks}}<li class="none">No Tasks</li>{{/tasks}}
+      </ul>
+    </script>
+
+
+    <script type="text/html" id="couchapps_tpl">
+      <ul>
+        {{#couchapps}}
+        <li><a href="{{url}}">{{name}}<span class="arrow right">›</span></a></li>
+        {{/couchapps}}
+      </ul>
+    </script>
+
+
+    <script type="text/html" id="edit_key_tpl">
+      <form action="#savekey">
+        <ul>
+          <li class="header">Edit Document</li>
+          <li><span>{{key}}: {{value}}</span></li>
+          <li><textarea name="value">{{value}}</textarea></li>
+        </ul>
+        <div style="padding:10px;">
+          <input type="hidden" name="db" value="{{db}}" />
+          <input type="hidden" name="doc" value="{{doc}}" />
+          <input type="hidden" name="key" value="{{key}}" />
+          <input type="submit" value="Save" id="savekey" />
+          <a href="#/db/{{db}}/{{doc}}/{{key}}/_delete/" class="button warning">
+            Delete
+          </a>
+        </div>
+      </form>
+    </script>
+
+
+    <script type="text/html" id="document_tpl">
+
+      <ul>
+        <li class="header">JSON</li>
+        {{#keys}}
+        {{#canedit}}
+        <li><a href="#/db/{{db}}/{{doc}}/rev/{{rev}}/{{url}}/">
+            {{key}}: <span class="jsonval">{{value}}</span>
+            <span class="arrow right">›</span></a></li>
+        {{/canedit}}
+        {{^canedit}}
+        <li class="selectwrapper">{{key}}: <span class="jsonval">{{value}}</span></li>
+        {{/canedit}}
+        {{/keys}}
+      </ul>
+
+      {{#canedit}}
+      <form action="#addkey" id="addkeyform">
+        <input type="hidden" name="db" value="{{db}}" />
+        <input type="hidden" name="doc" value="{{doc}}">
+        <input type="hidden" name="key" value="{{key}}">
+
+        <ul id="addkeylist"></ul>
+        <div style="padding:10px;">
+          <a class="button" id="addkey">Add Key</a>
+        </div>
+      </form>
+      {{/canedit}}
+
+      {{#preview}}
+      <ul>
+        <li class="header">Preview</li>
+        <li class="selectwrapper" style="text-align:center;">{{{preview}}}</li>
+      </ul>
+      {{/preview}}
+
+
+      {{#hasrevisions}}
+      <ul>
+        <li class="header">Revisions</li>
+        {{#revisions}}
+        {{#available}}
+        <li><a href="#/db/{{db}}/{{doc}}/rev/{{rev}}/">{{rev}}<span class="arrow right">›</span></a></li>
+        {{/available}}
+        {{^available}}<li><span class="unavailable">{{rev}}</span>{{/available}}
+        {{/revisions}}
+      </ul>
+      {{/hasrevisions}}
+      <div style="padding:10px;">
+        <a href="#/db/{{db}}/{{doc}}{{optkey}}/_delete/" class="button warning">
+          Delete
+        </a>
+      </div>
+    </script>
+
+
+    <script type="text/html" id="database_tpl">
+      <ul>
+        <li class="header">Database Info</li>
+        <li><span>Document Count:
+            <span class="right padded">{{doc_count}}</span></span></li>
+        <li><span>Update Seq:
+            <span class="right padded">{{update_seq}}</span></span></li>
+        <li><span>Disk Size:<span class="right padded">{{disk_size}}</span></span></li>
+        <li><a href="#/db/{{db}}/changes">Changes<span class="arrow right">›</span></a></li>
+      </ul>
+
+      <ul>
+        <li class="header">Views</li>
+        <li><a href="#/db/{{db}}/views/_all_docs">All Documents<span class="arrow right">›</span></a></li>
+        <li><a href="#/db/{{db}}/views/_design_docs">Design Documents<span class="arrow right">›</span></a></li>
+        {{#views}}
+        <li><a href="#/db/{{db}}/views/{{ddoc}}-{{name}}">{{id}}/{{name}}<span class="arrow right">›</span></a></li>
+        {{/views}}
+      </ul>
+
+      <div style="padding:10px;">
+        <a href="#/db/{{db}}/_create_doc/" class="button">Create New Document</a>
+        <br />
+        <a href="#/db/{{db}}/_compact/" class="button">Compact Database</a>
+        <br />
+        <a href="#/db/{{db}}/_delete/" class="button warning">Delete</a>
+      </div>
+
+    </script>
+
+
+    <script type="text/html" id="create_doc_tpl">
+      <form action="#create_doc">
+        <input type="hidden"  name="db" value="{{db}}" />
+        <ul>
+          <li class="header">Create Document</li>
+          <li>
+            <input type="text"  name="id" placeholder="✎ id" />
+          </li>
+          <li><textarea placeholder="json" name="value"></textarea></li>
+        </ul>
+        <div style="padding:10px;">
+          <input type="submit" value="Create" />
+        </div>
+      </form>
+    </script>
+
+
+    <script type="text/html" id="changes_tpl">
+      <h3 style="text-align:center">Changes: {{last_seq}}</h3></div>
+      <ul>
+        {{#results}}
+        <li><span><span class="grey">{{seq}}. {{id}}: </span>{{changes_string}}</span></li>
+        {{/results}}
+      </ul>
+    </script>
+
+
+    <script type="text/html" id="database_view_tpl">
+      {{#total}}
+      <p>{{start}} to {{end}} of {{total}}</p>
+      {{/total}}
+      <ul>
+        {{#rows}}
+        <li><a href="#/db/{{db}}/{{name}}/">{{{display}}}<span class="arrow right">›</span></a></li>
+        {{/rows}}
+        {{^rows}}
+        <li class="none">No Results</li>
+        {{/rows}}
+      </ul>
+
+      <div id="paginator">
+        {{#hasNext}}
+        <a href='#/db/{{db}}/views/{{view}}?startkey={{startkey}}'
+           class="button next">Next &gt;</a>
+        {{/hasNext}}
+        &nbsp;
+        {{#hasBack}}
+        <a href='#/db/{{db}}/views/{{view}}?descending=true&startkey={{backkey}}'
+           class="button back">&lt; Back</a>
+        {{/hasBack}}
+      </div>
+
+    </script>
+
+
+    <script type="text/html" id="confirm_tpl">
+      <form action="{{action}}">
+
+        {{#form}}
+        <input type="hidden" name="{{key}}" value="{{value}}" />
+        {{/form}}
+
+        <ul><li>
+            <p><strong>Are you sure you want to {{notice}}</strong></p>
+        </li></ul>
+        <div style="padding:10px;">
+          <a href="{{cancel}}" class="button">Cancel</a>
+        </div>
+        <div style="padding:10px;">
+          <input type="submit" value="{{action_btn}}" class="warning" />
+        </div>
+      </form>
+    </script>
+
+
+    <script type="text/html" id="databases_tpl">
+      <ul id="db_list">
+        <li class="header">Databases</li>
+        {{#databases}}
+        <li><a href="#/db/{{url}}/">{{name}}
+            <span class="arrow right">›</span></a></li>
+        {{/databases}}
+      </ul>
+
+      <form action="#create_db" id="create_db_form">
+        <ul>
+          <li class="header">Create Database</li>
+          <li>
+            <input type="text"  name="name" placeholder="✎ Database Name" required />
+          </li>
+        </ul>
+        <div style="padding:10px;">
+          <input type="submit" value="Create" />
+        </div>
+      </form>
+
+    </script>
+
+    <script type="text/html" id="unauthorized_tpl">
+      <div id="unauthorized">
+        <h1>!</h1>
+        You need to be logged in as an admin to access this page.
+      </div>
+    </script>
+
+
+    <script type="text/html" id="replication_tpl">
+
+      <ul id="running">
+        <li class="header">Replicator Database</li>
+      </ul>
+
+      <form action="#replication">
+        <ul class="replication">
+          <li class="header">Create Replication</li>
+          <li>
+            <div class="selectwrapper">
+              From:
+              <select name="source" id="source_select">
+                {{#databases}}
+                <option value="{{.}}">{{.}}</option>
+                {{/databases}}
+              </select>
+              <input type="text" name="custom_source" id="custom_source"
+                     placeholder="✎ or enter a url" value="" />
+            </div>
+            <div class="selectwrapper">
+              To:
+              <select name="target" id="target_select">
+                {{#databases}}
+                <option value="{{.}}">{{.}}</option>
+                {{/databases}}
+              </select>
+              <input type="text" name="custom_target" id="custom_target"
+                     placeholder="✎ or enter a url"  value="" />
+            </div>
+
+            <label for="continuous">
+              <input type="checkbox" id="continuous" name="continuous" /> Continuous
+            </label>
+
+            <label for="persist">
+              <input type="checkbox" id="persist" name="persist" checked="checked" />
+              Persist in Replicator Database
+            </label>
+
+          </li>
+        </ul>
+        <div style="padding:10px;">
+          <input type="submit" value="replicate" />
+        </div>
+      </form>
+
+      <div id="replication_feedback"></div>
+
+    </script>
+
+
+    <script type="text/html" id="replication_items">
+      {{#running}}
+      <li data-source="{{source}}" data-target="{{target}}"
+          data-continuous="{{continuous}}" data-create_target="{{create_target}}"
+          class="repl">
+        <a class="replication" href="#/replication/{{id}}">
+          {{#error}}<span class="error repl_status">!</span>{{/error}}
+          {{#completed}}<span class="completed repl_status">✔</span>{{/completed}}
+          {{#triggered}}<span class="running repl_status">✔</span>{{/triggered}}
+          {{source}} -> {{target}}
+          <span class="arrow right">›</span>
+        </a>
+      </li>
+      {{/running}}
+      {{^running}}
+      <li class="none">No Running Replications</li>
+      {{/running}}
+    </script>
+
+
+    <script type="text/html" id="logged_out_btn">
+      <a class="plain_btn" href="#/login/" id="logged_out_link">login</a>
+    </script>
+
+
+    <script type="text/html" id="logged_in_btn">
+      <a class="plain_btn" id="logged_in_link">{{name}}</a>
+    </script>
+
+
+    <script type="text/html" id="logged_out">
+      <div class="dialog">
+        <div class="inner_dialog">
+        <form action="#login">
+          <input type="text" id="username" name="username" placeholder="✎ username" /><br />
+          <input type="password" id="password" name="password" placeholder="✎ password" />
+          <label for="register" id="register_wrap">
+            <input type="checkbox" id="register" name="register" /> Register
+          </label>
+          <input type="button" value="Cancel" id="cancel" class="close" />
+          <input type="submit" value="Login" id="login" />
+        </form>
+      </div>
+      </div>
+    </script>
+
+
+    <script type="text/html" id="logged_in">
+      <form action="#logout">
+        <input type="submit" value="Sign Out" id="logout" />
+      </form>
+    </script>
+
+
+  </div></body>
+
+  <script src="./js/sha1.js"></script>
+  <script src="./js/jquery-1.6.min.js"></script>
+  <script src="./js/google.fastbutton.js"></script>
+  <script src="./js/jquery.couch.js"></script>
+  <script src="./js/modernizr-1.7.min.js"></script>
+  <script src="./js/mustache.js  "></script>
+  <script src="./js/router.js"></script>
+  <script src="./js/renderer.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/mobile.futon.js"></script>
+
+</html>

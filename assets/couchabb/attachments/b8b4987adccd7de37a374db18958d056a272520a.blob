@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>TodoMVC with Backbone Boilerplate</title>
+
+  <!-- Application styles -->
+<!--   <link rel="stylesheet" href="assets/css/todos.css"> -->
+  <link rel="stylesheet" href="assets/css/index.css">
+</head>
+
+<body>
+  <!-- Main container -->
+  <div role="main" id="main"></div>
+
+  <!-- Application source -->
+  <script type="text/javascript" charset="utf-8" src="assets/js/libs/cordova-2.0.0.js"></script>
+  <!-- <script src="http://192.168.16.110:8081/target/target-script-min.js#anonymous"></script>  -->
+  <script data-main="app/config.js" src="assets/js/libs/require.js"></script>
+</body>
+</html>
