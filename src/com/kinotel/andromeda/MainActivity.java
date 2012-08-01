@@ -162,6 +162,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 
 	    try {
 	    	URL masterServerUrl = new URL(masterServer);
+	    	Log.d(TAG, "Syncpoint masterServerUrl: " + masterServerUrl);
 	    	try {
 	    		// Check if there is already a pairing session in-use.
 	    		HttpClient httpClient = new TouchDBHttpClient(server);
