@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.List;
 import java.util.Properties;
 
@@ -12,13 +17,35 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.scheme.SocketFactory;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.DbAccessException;
 import org.ektorp.android.http.AndroidHttpClient;
 import org.ektorp.android.util.EktorpAsyncTask;
 import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
+import org.zahangirbd.android.cert.InstallCert;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -34,6 +61,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.byarger.exchangeit.EasySSLSocketFactory;
 import com.couchbase.syncpoint.SyncpointClient;
 import com.couchbase.syncpoint.impl.SyncpointClientImpl;
 import com.couchbase.syncpoint.model.PairingUser;
@@ -47,6 +75,7 @@ import com.couchbase.touchdb.ektorp.TouchDBHttpClient;
 import com.couchbase.touchdb.javascript.TDJavaScriptViewCompiler;
 import com.couchbase.touchdb.listener.TDListener;
 import com.couchbase.touchdb.replicator.TDReplicator;
+import com.couchbase.touchdb.support.HttpClientFactory;
 
 public class MainActivity extends SherlockActivity implements CordovaInterface {
 
@@ -82,6 +111,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         setContentView(R.layout.activity_main); 
         mainView =  (CordovaWebView) findViewById(R.id.mainView);
         //mainView.loadUrl("file:///android_asset/www/blank.html");
+
         
         filesDir = getFilesDir().getAbsolutePath();
         Properties properties = new Properties();
@@ -96,7 +126,19 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         }
         
         try {
-            server = new TDServer(filesDir);           
+            server = new TDServer(filesDir);
+            //server.setDefaultHttpClientFactory(defaultHttpClientFactory);
+            
+            server.setDefaultHttpClientFactory(new HttpClientFactory() {
+
+                @Override
+                public org.apache.http.client.HttpClient getHttpClient() {
+                    DefaultHttpClient httpClient = new DefaultHttpClient();
+                    // to enable self-signed SSL certs.
+        	        httpClient.getConnectionManager().getSchemeRegistry().register(new Scheme("https", new EasySSLSocketFactory(), 6984));
+                    return httpClient;
+                }
+            });
             listener = new TDListener(server, 8888);
             listener.start();
             TDView.setCompiler(new TDJavaScriptViewCompiler());
@@ -120,8 +162,9 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	    	Constants.serverURLString = masterServer;
 	    	//Constants.replicationURL = masterServer + "/" + appDb;
 	    	Log.d(TAG, "Disabled Constants.replicationURL: no replication.");
-		    Log.d(TAG, "replicationURL: " + Constants.replicationURL);
+		    //Log.d(TAG, "replicationURL: " + Constants.replicationURL);
 	    }
+        
 	    String syncpointAppId = properties.getProperty("syncpoint_app_id");
 	    if (syncpointAppId != null) {
 	    	Constants.syncpointAppId = syncpointAppId;
@@ -175,7 +218,10 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 		    		if (pairingUser != null) {
 		    			Log.v(TAG, "Pairing still in-progress");
 			    		
-			    		HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(masterServerUrl).username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
+			    		HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(masterServerUrl).relaxedSSLSettings(true)
+			    				.username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
+
+			    		//.url(masterServerUrl).username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
 			    		CouchDbInstance remote = new StdCouchDbInstance(remoteHttpClient);
 			    		final CouchDbConnector userDb = remote.createConnector("_users", false);
 			    		EktorpAsyncTask task = new EktorpAsyncTask() {
@@ -196,10 +242,10 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 
 			    		task.execute();
 		    		} else {
-			    		syncpoint = new SyncpointClientImpl(getApplicationContext(), masterServerUrl, Constants.syncpointAppId);
+			    		syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, masterServerUrl, Constants.syncpointAppId);
 		    		}
 	    		} else {
-	    			syncpoint = new SyncpointClientImpl(getApplicationContext(), masterServerUrl, Constants.syncpointAppId);
+	    			syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, masterServerUrl, Constants.syncpointAppId);
 	    		}
 	    	} catch (org.ektorp.UpdateConflictException e1) {
 	    		Log.v(TAG, "Error: " + e1);
