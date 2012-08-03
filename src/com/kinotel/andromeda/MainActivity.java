@@ -49,6 +49,8 @@ import org.zahangirbd.android.cert.InstallCert;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -57,6 +59,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -104,7 +107,8 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	private String couchAppInstanceUrl;	// from properties file used in installation.
 	String filesDir;
 	
-    @Override
+	@SuppressLint("NewApi")
+	@Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
@@ -112,6 +116,12 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         mainView =  (CordovaWebView) findViewById(R.id.mainView);
         //mainView.loadUrl("file:///android_asset/www/blank.html");
 
+        if (android.os.Build.VERSION.SDK_INT > 9) {  
+        	StrictMode.VmPolicy vmpolicy = new StrictMode.VmPolicy.Builder().penaltyLog().build();
+        	StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        	StrictMode.setThreadPolicy(policy);
+        	StrictMode.setVmPolicy(vmpolicy);
+        }
         
         filesDir = getFilesDir().getAbsolutePath();
         Properties properties = new Properties();
@@ -536,7 +546,20 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     		//syncpoint.pairSessionWithType("console", selectedAccount.name);
     		if (selectedAccount != null) {
     			try {
-    				syncpoint.pairSession("console", selectedAccount.name);
+    				
+    				EktorpAsyncTask task = new EktorpAsyncTask() {
+
+    		            @Override
+    		            protected void doInBackground() {
+    		            	syncpoint.pairSession("console", selectedAccount.name);
+    		            }
+
+    		            @Override
+    		            protected void onSuccess() {
+    		                Log.v(TAG, "Initiated pairing.");
+    		            }
+    		        };
+    		        task.execute();
     				HttpClient httpClient = new TouchDBHttpClient(server);
     				CouchDbInstance localServer = new StdCouchDbInstance(httpClient);  	
     				//CouchDbConnector userDb = localServer.createConnector("_users", false);
