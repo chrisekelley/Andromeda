@@ -225,7 +225,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	    		session = SyncpointSession.sessionInDatabase(getApplicationContext(), localServer, localControlDatabase);
 	    		if((session!= null) && (!session.isPaired())) {
 	    			final PairingUser pairingUser = session.getPairingUser();		    		
-		    		if (pairingUser != null) {
+		    		if ((pairingUser != null) && (selectedAccount != null) && (session.isReadyToPair())) {
 		    			Log.v(TAG, "Pairing still in-progress");
 			    		
 			    		HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(masterServerUrl).relaxedSSLSettings(true)
@@ -511,6 +511,12 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         else {
             //this.endActivity();
         }
+    }
+    
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        //final SyncpointClient syncpoint = collectMyLoadedData();
+        return syncpoint;
     }
 	
 	// Andromeda-specific methods
