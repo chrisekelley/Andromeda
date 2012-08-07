@@ -86,7 +86,7 @@ public class AccountSave extends Plugin {
 	}
 
 	/**
-	 * Stop the battery receiver and set it to null.
+	 * Stop the receiver and set it to null.
 	 */
 	private void removeListener() {
 		if (this.receiver != null) {
