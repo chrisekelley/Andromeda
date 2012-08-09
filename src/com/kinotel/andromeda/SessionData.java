@@ -1,6 +1,7 @@
 package com.kinotel.andromeda;
 
 import java.io.Serializable;
+import java.net.URL;
 
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
@@ -35,6 +36,7 @@ public class SessionData implements Serializable {
 	private SyncpointInstallation syncpointInstallation;
 	private String couchAppUrl;
 	private CouchDbInstance localServer;
+	private URL masterServerUrl;
 
 	public SessionData(TDServer server) {
 		this.server = server;
@@ -166,5 +168,13 @@ public class SessionData implements Serializable {
 
 	public void setLocalServer(CouchDbInstance localServer) {
 		this.localServer = localServer;
+	}
+
+	public URL getMasterServerUrl() {
+		return masterServerUrl;
+	}
+
+	public void setMasterServerUrl(URL masterServerUrl) {
+		this.masterServerUrl = masterServerUrl;
 	}
 }

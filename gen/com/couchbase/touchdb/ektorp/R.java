@@ -785,6 +785,8 @@ containing a value of this type.
         public static final int abs__tab_unselected_pressed_holo=0x7f020054;
         public static final int ic_action_search=0x7f020055;
         public static final int ic_launcher=0x7f020056;
+        public static final int ic_refresh=0x7f020057;
+        public static final int ic_refresh_inverse=0x7f020058;
     }
     public static final class id {
         public static final int abs__action_bar=0x7f070022;

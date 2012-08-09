@@ -5,11 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,46 +14,27 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.AuthState;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.SocketFactory;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.DbAccessException;
 import org.ektorp.android.http.AndroidHttpClient;
 import org.ektorp.android.util.EktorpAsyncTask;
 import org.ektorp.http.HttpClient;
-import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
-import org.zahangirbd.android.cert.InstallCert;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -67,6 +43,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.byarger.exchangeit.EasySSLSocketFactory;
 import com.couchbase.syncpoint.impl.SyncpointClientImpl;
 import com.couchbase.syncpoint.impl.SyncpointModelFactory;
@@ -95,7 +73,30 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     private IPlugin activityResultCallback;
     private Object activityResultKeepRunning;
     private Object keepRunning;
+    private ProgressDialog progressDialog;
     private SessionData sessionData = new SessionData(null);
+    
+    private static MainActivity activityRef;
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+
+        menu.add("Refresh")
+            .setIcon( R.drawable.ic_refresh)
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //This uses the imported MenuItem from ActionBarSherlock
+        Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
+		sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), sessionData.getLocalServer(), sessionData.getMasterServerUrl(), Constants.syncpointAppId));
+        return true;
+    }
+
 
 	@SuppressLint("NewApi")
 	@Override
@@ -104,6 +105,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); 
         mainView =  (CordovaWebView) findViewById(R.id.mainView);
+        activityRef = this;
         //mainView.loadUrl("file:///android_asset/www/blank.html");
 
         if (android.os.Build.VERSION.SDK_INT > 9) {  
@@ -152,7 +154,6 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         		Log.e(TAG, "Unable to create TDServer", e);
         	}
 
-        	// start couchbase
         	String ipAddress = "0.0.0.0";
         	Log.d(TAG, ipAddress);
         	String host = ipAddress;
@@ -209,13 +210,12 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 
         	//** Syncpoint	**//*
 
-        	URL masterServerUrl = null;
         	try {
-        		masterServerUrl = new URL(masterServer);
+        		sessionData.setMasterServerUrl(new URL(masterServer));
         	} catch (MalformedURLException e) {
         		e.printStackTrace();
         	}
-        	Log.d(TAG, "Syncpoint masterServerUrl: " + masterServerUrl);
+        	Log.d(TAG, "Syncpoint masterServerUrl: " + sessionData.getMasterServerUrl());
         	try {
         		// Check if there is already a pairing session in-use.
         		HttpClient httpClient = new TouchDBHttpClient(sessionData.getServer());
@@ -229,7 +229,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         			if ((pairingUser != null) && (sessionData.getSelectedAccount() != null) && (sessionData.getSession().isReadyToPair())) {
         				Log.v(TAG, "Pairing still in-progress");
 
-        				HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(masterServerUrl).relaxedSSLSettings(true)
+        				HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(sessionData.getMasterServerUrl()).relaxedSSLSettings(true)
         						.username(sessionData.getSession().getPairingCreds().getUsername()).password(sessionData.getSession().getPairingCreds().getPassword()).maxConnections(100).build();
 
         				//.url(masterServerUrl).username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
@@ -253,10 +253,10 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 
         				task.execute();
         			} else {
-        				sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, masterServerUrl, Constants.syncpointAppId));
+        				sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getMasterServerUrl(), Constants.syncpointAppId));
         			}
         		} else {
-        			sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, masterServerUrl, Constants.syncpointAppId));
+        			sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getMasterServerUrl(), Constants.syncpointAppId));
         		}
         	} catch (org.ektorp.UpdateConflictException e1) {
         		Log.v(TAG, "Error: " + e1);
@@ -586,59 +586,88 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     		//C2DMessaging.register( this, C2DM_SENDER );
     		//syncpoint.pairSessionWithType("console", selectedAccount.name);
     		if (sessionData.getSelectedAccount() != null) {
-    			try {
-    				
-    				EktorpAsyncTask task = new EktorpAsyncTask() {
-
-    		            @Override
-    		            protected void doInBackground() {
-    		            	sessionData.getSyncpoint().pairSession("console", sessionData.getSelectedAccount().name);
-    		            }
-
-    		            @Override
-    		            protected void onSuccess() {
-    		                Log.v(TAG, "Initiated pairing.");
-    		            }
-    		        };
-    		        task.execute();
-    				//HttpClient httpClient = new TouchDBHttpClient(sessionData.getServer());
-    				//CouchDbInstance localServer = new StdCouchDbInstance(httpClient);  	
-    				//CouchDbConnector localControlDatabase = localServer.createConnector(SyncpointClientImpl.LOCAL_CONTROL_DATABASE_NAME, false);			    	
-    				
-    				//CouchDbConnector userDb = localServer.createConnector("_users", false);
-    				//PairingUser pairingUser = session.getPairingUser();
-    				//PairingUser result = userDb.get(PairingUser.class, pairingUser.getId());
-    				//waitForPairingToComplete(localServer, localControlDatabase);
-    				//setupLocalSyncpointDatabase(localServer);
-    				
-    				SyncpointChannel channel = sessionData.getSyncpoint().getMyChannel(Constants.syncpointDefaultChannelName);
-    				CouchDbConnector localDatabase = channel.ensureLocalDatabase(getApplicationContext());
-    				String localDatabaseName = localDatabase.getDatabaseName();
-    				
-    				sessionData.setNewDb(sessionData.getServer().getDatabaseNamed(localDatabaseName));
-    	    		//newDb.open();
-    	    		String destFileName = sessionData.getFilesDir() + "/" + localDatabaseName + TOUCHDB_DATABASE_SUFFIX ;
-    	    		File destFile = new File(destFileName);
-    	    		if(!destFile.exists()) {
-    	    			destFile.delete();
-    	    		}
-    				
-    				try {
-						sessionData.getNewDb().replaceWithDatabase(sessionData.getFilesDir() + "/" + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX,  sessionData.getFilesDir() + "/" + sessionData.getAppDb() + "/attachments");
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-    				
-    				launchCouchAppView(localDatabaseName);
-    			} catch (DbAccessException e) {
-    				Log.e( TAG, "Error: " , e);
-    				Toast.makeText(this, "Error: Unable to connect to Syncpoint Server: " + e.getMessage(), Toast.LENGTH_LONG).show();
-    			}
-    			Log.d( TAG, "register() done" );
+    			progressDialog = new ProgressDialog(MainActivity.this);
+				//progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+				progressDialog.setTitle(R.string.app_name);
+				progressDialog.setMessage("Registering. Please wait...");
+				progressDialog.setCancelable(false);
+			    progressDialog.setOwnerActivity(activityRef);
+			    progressDialog.setIndeterminate(true);
+			    progressDialog.setProgress(0);
+			    progressDialog.show();
+			    
+			    // Start a new thread that will register the acct.
+		        new RegisterAccount().execute();
     		}
     	}
     }
+	
+	  private class RegisterAccount extends AsyncTask<String, Void, Object> {
+	         protected Object doInBackground(String... args) {
+	             Log.i("MyApp", "Background register thread starting");
+
+	             try {
+	    				EktorpAsyncTask task = new EktorpAsyncTask() {
+
+	    		            @Override
+	    		            protected void doInBackground() {
+	    		            	try {
+									sessionData.getSyncpoint().pairSession("console", sessionData.getSelectedAccount().name);
+								} catch (DbAccessException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}       
+	    		            }
+
+	    		            @Override
+	    		            protected void onSuccess() {
+	    		                Log.v(TAG, "Initiated pairing.");
+	    		            }
+	    		            @Override
+	    		            protected void onDbAccessException(DbAccessException dbAccessException) {
+	    		            	Log.e(TAG, "onDbAccessException", dbAccessException);
+	    		            }
+	    		        };
+	    		        task.execute();
+	    				
+	    				SyncpointChannel channel = sessionData.getSyncpoint().getMyChannel(Constants.syncpointDefaultChannelName);
+	    				CouchDbConnector localDatabase = channel.ensureLocalDatabase(getApplicationContext());
+	    				String localDatabaseName = localDatabase.getDatabaseName();
+	    				
+	    				sessionData.setNewDb(sessionData.getServer().getDatabaseNamed(localDatabaseName));
+	    	    		//newDb.open();
+	    	    		String destFileName = sessionData.getFilesDir() + "/" + localDatabaseName + TOUCHDB_DATABASE_SUFFIX ;
+	    	    		File destFile = new File(destFileName);
+	    	    		if(!destFile.exists()) {
+	    	    			destFile.delete();
+	    	    		}
+	    				
+	    				try {
+							sessionData.getNewDb().replaceWithDatabase(sessionData.getFilesDir() + "/" + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX,  sessionData.getFilesDir() + "/" + sessionData.getAppDb() + "/attachments");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	    				
+	    				launchCouchAppView(localDatabaseName);
+	    				//progressDialog.dismiss();
+	    			} catch (DbAccessException e) {
+	    				Log.e( TAG, "Error: " , e);
+	    				Toast.makeText(MainActivity.this, "Error: Unable to connect to Syncpoint Server: " + e.getMessage(), Toast.LENGTH_LONG).show();
+	    			}
+
+	             return "replace this with your data object";
+	         }
+
+	         protected void onPostExecute(Object result) {
+	             // Pass the result data back to the main activity
+	             //MainActivity.this.progressDialog = result;
+
+	             if (MainActivity.this.progressDialog != null) {
+	            	 MainActivity.this.progressDialog.dismiss();
+	             }
+	         }
+	    }
     
     private void unregister() {
 		if( sessionData.isRegistered() ) {
@@ -800,37 +829,36 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
                     waitForPairingToComplete(remote, user);
                 }
             }
-
-			public void checkChannelReadiness() {
-				Log.v(TAG, "Checking is channel was not ready when it tried to getUpToDateWithSubscriptions.");
-				//again this part of the implementation differs because we just
-				//have channel ids and need to load the channels
-				Map<String, SyncpointChannel> channelMap = new HashMap<String, SyncpointChannel>();
-				List<SyncpointChannel> channels = (List<SyncpointChannel>)SyncpointModelFactory.getModelsOfType(sessionData.getLocalControlDatabase(), "channel", SyncpointChannel.class);
-				for (SyncpointChannel channel : channels) {
-					channel.attach(sessionData.getLocalServer(), sessionData.getLocalControlDatabase());
-					channelMap.put(channel.getId(), channel);
-				}
-
-				// Sync all installations whose channels are ready:
-				List<SyncpointInstallation> allInstallations = sessionData.getSession().getAllInstallations();
-				Log.v(TAG, String.format("There are %d installations here", allInstallations.size()));
-				for (SyncpointInstallation installation : allInstallations) {
-					SyncpointChannel channel = channelMap.get(installation.getChannelId());
-					if(channel == null) {
-						Log.e(TAG, String.format("Installation %s references missing channel %s", installation, channel));
-					} else if(channel.isReady()) {
-						Log.v(TAG, String.format("Channel %s is ready, calling sync", channel.getName()));
-						//installation.sync(sessionData.getSession(), channel);
-					} else {
-						Log.v(TAG, String.format("Channel %s is not ready", channel.getName()));
-					}
-
-				}
-			}
         }, 3000);
-
     }
+	
+	public void checkChannelReadiness() {
+		Log.v(TAG, "Checking is channel was not ready when it tried to getUpToDateWithSubscriptions.");
+		//again this part of the implementation differs because we just
+		//have channel ids and need to load the channels
+		Map<String, SyncpointChannel> channelMap = new HashMap<String, SyncpointChannel>();
+		List<SyncpointChannel> channels = (List<SyncpointChannel>)SyncpointModelFactory.getModelsOfType(sessionData.getLocalControlDatabase(), "channel", SyncpointChannel.class);
+		for (SyncpointChannel channel : channels) {
+			channel.attach(sessionData.getLocalServer(), sessionData.getLocalControlDatabase());
+			channelMap.put(channel.getId(), channel);
+		}
+
+		// Sync all installations whose channels are ready:
+		List<SyncpointInstallation> allInstallations = sessionData.getSession().getAllInstallations();
+		Log.v(TAG, String.format("There are %d installations here", allInstallations.size()));
+		for (SyncpointInstallation installation : allInstallations) {
+			SyncpointChannel channel = channelMap.get(installation.getChannelId());
+			if(channel == null) {
+				Log.e(TAG, String.format("Installation %s references missing channel %s", installation, channel));
+			} else if(channel.isReady()) {
+				Log.v(TAG, String.format("Channel %s is ready, calling sync", channel.getName()));
+				//installation.sync(sessionData.getSession(), channel);
+			} else {
+				Log.v(TAG, String.format("Channel %s is not ready", channel.getName()));
+			}
+
+		}
+	}
 	
     void pairingDidComplete(final CouchDbConnector remote, final PairingUser userDoc) {
         sessionData.getSession().setState("paired");

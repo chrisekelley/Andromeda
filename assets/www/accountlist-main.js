@@ -31,10 +31,10 @@ function selectAccount(account) {
 			}, 
 			function (result) {
 				console.log("result length: " + result.length);
-				alert("Success: " + result + " registered.");
 			},
 			function (error) {
 				console.log(error);
+				alert("Error: " + error);
 			}
 	);
 }
