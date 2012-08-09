@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -116,10 +117,10 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         }
         
         // try to keep app from reloading everything when orientation is changed.
-        if (savedInstanceState != null) {
+        /*if (savedInstanceState != null) {
             // Restore last state for checked position.
         	sessionData = (SessionData) savedInstanceState.getSerializable("sessionData");
-        } else {
+        } else {*/
         //if (sessionData.getSession() == null) {
         	sessionData.setFilesDir(getFilesDir().getAbsolutePath());
         	Properties properties = new Properties();
@@ -265,7 +266,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         		e1.printStackTrace();
         		Toast.makeText(this, "Error: Unable to connect to Syncpoint Server: " + e1.getMessage(), Toast.LENGTH_LONG).show();
         	}
-        }
+        //}
 	    	
         SyncpointChannel channel = null;
         if (sessionData.getSession() != null) {
@@ -491,9 +492,8 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         if (mainView.pluginManager != null) {
             try {
 				mainView.pluginManager.onDestroy();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG,"Error while destroying pluginManager: ", e);
 			}
         }
         
@@ -526,17 +526,17 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     public void onConfigurationChanged(Configuration newConfig)
     {
     	super.onConfigurationChanged(newConfig);
-    	setContentView(R.layout.main);
+    	//setContentView(R.layout.main);
     	Log.v(TAG, "Configuration changed.");
 
-    	InitializeUI();
+    	//InitializeUI();
     }
     
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.v(TAG, "onSaveInstanceState");
-        outState.putSerializable("sessionData", sessionData);
+        //outState.putSerializable("sessionData", sessionData);
     }
 	
 	// Andromeda-specific methods
