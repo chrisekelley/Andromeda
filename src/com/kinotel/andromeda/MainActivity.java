@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebViewClient;
+import org.apache.cordova.DroidGap;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
@@ -31,16 +33,18 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -83,19 +87,19 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     public boolean onCreateOptionsMenu(Menu menu) {
 
 
-        menu.add("Refresh")
-            .setIcon( R.drawable.ic_refresh)
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+    	menu.add("Refresh")
+    	.setIcon( R.drawable.ic_refresh)
+    	.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-        return true;
+    	return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        //This uses the imported MenuItem from ActionBarSherlock
-        Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
-		sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), sessionData.getLocalServer(), sessionData.getMasterServerUrl(), Constants.syncpointAppId));
-        return true;
+    	//This uses the imported MenuItem from ActionBarSherlock
+    	Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
+    	sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), sessionData.getLocalServer(), sessionData.getMasterServerUrl(), Constants.syncpointAppId));
+    	return true;
     }
 
 
@@ -106,6 +110,28 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); 
         mainView =  (CordovaWebView) findViewById(R.id.mainView);
+        //mainView.clearCache(true);
+        //mainView.clearHistory();
+        //mainView.setWebChromeClient(new CustomWebViewClient());
+        //mainView.setWebViewClient(new CustomWebViewClient(this));
+        mainView.setWebViewClient(new CustomCordovaWebViewClient(this, mainView));
+        /*mainView.setWebViewClient(new CordovaWebViewClient(this){
+
+        	public boolean shouldOverrideUrlLoading(final WebView view, String url) {
+        		Log.i("BugTest", "shouldOverrideUrlLoading: " + url);
+        		return true;
+        	}
+        	@Override
+        	public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        		super.onPageStarted(view, url, favicon);
+        		Log.i("BugTest", "onPageStarted: " + url);
+        	}
+        	@Override
+        	public void onPageFinished(WebView view, String url) {
+        		super.onPageFinished(view, url);
+        		Log.i("BugTest", "onPageFinished: " + url);
+        	}
+        });*/
         activityRef = this;
         //mainView.loadUrl("file:///android_asset/www/blank.html");
 
@@ -323,6 +349,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         		//setContentView(R.layout.main);
         		//mainView =  (CordovaWebView) findViewById(R.id.mainView);
         		mainView.loadUrl(sessionData.getCouchAppUrl());
+        		//mainView.setWebViewClient(new CustomCordovaWebViewClient(this));
         	}
         } else {
         	startAccountSelector();
@@ -330,6 +357,87 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	    
         //mainView.loadUrl("file:///android_asset/www/index.html");
     }
+	
+	private class CustomWebViewClient extends CordovaWebViewClient {
+	/*	public CustomWebViewClient(CordovaInterface cordova) {
+			super(cordova);
+		}*/
+		
+		public CustomWebViewClient(DroidGap ctx) {
+			super(ctx);
+		}
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			if (url.startsWith("tel:")) {
+				Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+				startActivity(intent);
+			} else if (url.startsWith("http:") || url.startsWith("https:")) {
+				view.loadUrl(url);
+			}
+			return true;
+		}
+		
+		@Override
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {
+			super.onPageStarted(view, url, favicon);
+			Log.i("BugTest", "onPageStarted: " + url);
+		}
+		
+		@Override
+		public void onPageFinished(WebView view, String url) {
+			super.onPageFinished(view, url);
+			Log.i("BugTest", "onPageFinished: " + url);
+            if (MainActivity.this.progressDialog != null) {
+           	 MainActivity.this.progressDialog.dismiss();
+            }
+        }
+		
+		 @Override
+		 public void doUpdateVisitedHistory(WebView view, String url, boolean isReload){  
+		     super.doUpdateVisitedHistory(view, url, isReload);  
+		 }
+
+		 @Override
+		 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+		     super.onReceivedError(view, errorCode, description, failingUrl);
+		 }
+		
+	}
+	
+	public class CustomCordovaWebViewClient extends CordovaWebViewClient {
+
+		 public CustomCordovaWebViewClient(CordovaInterface ctx, CordovaWebView view) {
+		   super(ctx, view);
+		 }
+
+		 @Override
+		 public void onPageStarted(WebView view, String url, Bitmap bitmap) {
+		   super.onPageStarted(view, url, bitmap);
+		   Log.i("TEST", "onPageStarted: " + url);
+		 }
+
+		 @Override
+		 public void onPageFinished(WebView view, String url) {
+		   super.onPageFinished(view, url);
+		   Log.i("TEST", "onPageFinished: " + url);
+		   if (MainActivity.this.progressDialog != null) {
+			   MainActivity.this.progressDialog.dismiss();
+		   }
+		 }
+
+		 @Override
+		 public void doUpdateVisitedHistory(WebView view, String url, boolean isReload){  
+		     super.doUpdateVisitedHistory(view, url, isReload);  
+		 }
+
+		 @Override
+		 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+		     super.onReceivedError(view, errorCode, description, failingUrl);
+		 }
+
+		}
+	
 
 	@Override
 	@Deprecated
@@ -549,6 +657,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         
         if (sessionData.getSyncpointInstallation() != null) {
         	mainView.loadUrl(sessionData.getCouchAppUrl());
+        	//mainView.setWebViewClient(new CustomCordovaWebViewClient(this));
         } else {
         	startAccountSelector();
         }
@@ -663,9 +772,9 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	             // Pass the result data back to the main activity
 	             //MainActivity.this.progressDialog = result;
 
-	             if (MainActivity.this.progressDialog != null) {
+	             /*if (MainActivity.this.progressDialog != null) {
 	            	 MainActivity.this.progressDialog.dismiss();
-	             }
+	             }*/
 	         }
 	    }
     
@@ -804,9 +913,12 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	    	couchAppUrl = sessionData.getUrl() + sessionData.getLocalSyncpointDbName() + "/" + sessionData.getCouchAppInstanceUrl();
 	    }
 	    Log.d( TAG, "Loading couchAppUrl: " + couchAppUrl );
+	    
 	    //this.loadUrl(couchAppUrl);
 	    mainView.loadUrl(couchAppUrl);
 	}
+	
+
 	
 	public Account getSelectedAccount() {
 		return sessionData.getSelectedAccount();

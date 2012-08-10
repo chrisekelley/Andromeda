@@ -82,6 +82,7 @@
     text-align:center;
     margin:0;
     margin-top:15px;
+    margin-bottom:10px;
     padding:0;
   }
 
@@ -101,9 +102,9 @@
   	border-radius: 5px;
   	text-align:center;
   	display:block;
-  	float:left;
+  	/* float:left;*/
   	background:#444;
-  	width:150px;
+  	/* width:150px;*/
   	color:#9ab;
   	font-size:2em;
   	text-decoration:none;
@@ -111,7 +112,7 @@
   	margin:3px 0px 3px 5px;
   }
   #stage.theme a.btn.large{
-  	width:308px;
+  	/* width:308px; */
   	padding:1.2em 0;
   }
 
