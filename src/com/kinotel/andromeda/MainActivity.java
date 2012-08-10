@@ -110,30 +110,8 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); 
         mainView =  (CordovaWebView) findViewById(R.id.mainView);
-        //mainView.clearCache(true);
-        //mainView.clearHistory();
-        //mainView.setWebChromeClient(new CustomWebViewClient());
-        //mainView.setWebViewClient(new CustomWebViewClient(this));
         mainView.setWebViewClient(new CustomCordovaWebViewClient(this, mainView));
-        /*mainView.setWebViewClient(new CordovaWebViewClient(this){
-
-        	public boolean shouldOverrideUrlLoading(final WebView view, String url) {
-        		Log.i("BugTest", "shouldOverrideUrlLoading: " + url);
-        		return true;
-        	}
-        	@Override
-        	public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        		super.onPageStarted(view, url, favicon);
-        		Log.i("BugTest", "onPageStarted: " + url);
-        	}
-        	@Override
-        	public void onPageFinished(WebView view, String url) {
-        		super.onPageFinished(view, url);
-        		Log.i("BugTest", "onPageFinished: " + url);
-        	}
-        });*/
         activityRef = this;
-        //mainView.loadUrl("file:///android_asset/www/blank.html");
 
         if (android.os.Build.VERSION.SDK_INT > 9) {  
         	StrictMode.VmPolicy vmpolicy = new StrictMode.VmPolicy.Builder().penaltyLog().build();
@@ -142,157 +120,150 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         	StrictMode.setVmPolicy(vmpolicy);
         }
         
-        // try to keep app from reloading everything when orientation is changed.
-        /*if (savedInstanceState != null) {
-            // Restore last state for checked position.
-        	sessionData = (SessionData) savedInstanceState.getSerializable("sessionData");
-        } else {*/
-        //if (sessionData.getSession() == null) {
-        	sessionData.setFilesDir(getFilesDir().getAbsolutePath());
-        	Properties properties = new Properties();
+        sessionData.setFilesDir(getFilesDir().getAbsolutePath());
+        Properties properties = new Properties();
 
-        	try {
-        		InputStream rawResource = getResources().openRawResource(R.raw.coconut);
-        		properties.load(rawResource);
-        	} catch (Resources.NotFoundException e) {
-        		System.err.println("Did not find raw resource: " + e);
-        	} catch (IOException e) {
-        		System.err.println("Failed to open property file");
-        	}
+        try {
+        	InputStream rawResource = getResources().openRawResource(R.raw.coconut);
+        	properties.load(rawResource);
+        } catch (Resources.NotFoundException e) {
+        	System.err.println("Did not find raw resource: " + e);
+        } catch (IOException e) {
+        	System.err.println("Failed to open property file");
+        }
 
-        	try {
-        		sessionData.setServer(new TDServer(sessionData.getFilesDir()));
-        		//server.setDefaultHttpClientFactory(defaultHttpClientFactory);
+        try {
+        	sessionData.setServer(new TDServer(sessionData.getFilesDir()));
+        	//server.setDefaultHttpClientFactory(defaultHttpClientFactory);
 
-        		sessionData.getServer().setDefaultHttpClientFactory(new HttpClientFactory() {
+        	sessionData.getServer().setDefaultHttpClientFactory(new HttpClientFactory() {
 
-        			@Override
-        			public org.apache.http.client.HttpClient getHttpClient() {
-        				DefaultHttpClient httpClient = new DefaultHttpClient();
-        				// to enable self-signed SSL certs.
-        				httpClient.getConnectionManager().getSchemeRegistry().register(new Scheme("https", new EasySSLSocketFactory(), 6984));
-        				return httpClient;
-        			}
-        		});
-        		sessionData.setListener(new TDListener(sessionData.getServer(), 8888));
-        		sessionData.getListener().start();
-        		TDView.setCompiler(new TDJavaScriptViewCompiler());
-        	} catch (IOException e) {
-        		Log.e(TAG, "Unable to create TDServer", e);
-        	}
-
-        	String ipAddress = "0.0.0.0";
-        	Log.d(TAG, ipAddress);
-        	String host = ipAddress;
-        	int port = 8888;
-        	sessionData.setUrl("http://" + host + ":" + Integer.toString(port) + "/");
-
-        	//uiHandler = new Handler();
-        	sessionData.setAppDb(properties.getProperty("app_db"));
-        	sessionData.setCouchAppInstanceUrl(properties.getProperty("couchAppInstanceUrl"));
-        	File destination = new File(sessionData.getFilesDir() + File.separator + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
-        	String masterServer = properties.getProperty("master_server");
-        	if (masterServer != null) {
-        		Constants.serverURLString = masterServer;
-        		//Constants.replicationURL = masterServer + "/" + appDb;
-        		Log.d(TAG, "Disabled Constants.replicationURL: no replication.");
-        		//Log.d(TAG, "replicationURL: " + Constants.replicationURL);
-        	}
-
-        	String syncpointAppId = properties.getProperty("syncpoint_app_id");
-        	if (syncpointAppId != null) {
-        		Constants.syncpointAppId = syncpointAppId;
-        	}
-        	String syncpointDefaultChannelName = properties.getProperty("syncpoint_default_channel");
-        	if (syncpointDefaultChannelName != null) {
-        		Constants.syncpointDefaultChannelName = syncpointDefaultChannelName;
-        	}
-
-        	Log.d(TAG, "Checking for touchdb at " + sessionData.getFilesDir() + File.separator + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
-        	if (!destination.exists()) {
-        		Log.d(TAG, "Touchdb does not exist. Installing.");
-        		// must be in the assets directory
-        		try {
-        			//db.replaceWithDatabase(appDb + TOUCHDB_DATABASE_SUFFIX, appDb);
-        			AssetManager assetManager = this.getAssets();
-        			// This is the appDb touchdb
-        			CoconutUtils.copyFileOrDir(assetManager, sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX, sessionData.getFilesDir());
-        			// These are the appDb attachments
-        			CoconutUtils.copyFileOrDir(assetManager, sessionData.getAppDb(), sessionData.getFilesDir());
-        			// This is the mobilefuton touchdb
-        			CoconutUtils.copyFileOrDir(assetManager, "mobilefuton" + TOUCHDB_DATABASE_SUFFIX, sessionData.getFilesDir());
-        			// These are the mobilefuton attachments
-        			CoconutUtils.copyFileOrDir(assetManager, "mobilefuton", sessionData.getFilesDir());
-        		} catch (Exception e) {
-        			e.printStackTrace();
-        			String errorMessage = "There was an error extracting the database.";
-        			//displayLargeMessage(errorMessage, "big");
-        			Log.d(TAG, errorMessage);
-        			//progressDialog.setMessage(errorMessage);
-        			mainView.loadUrl("file:///android_asset/www/error.html");
+        		@Override
+        		public org.apache.http.client.HttpClient getHttpClient() {
+        			DefaultHttpClient httpClient = new DefaultHttpClient();
+        			// to enable self-signed SSL certs.
+        			httpClient.getConnectionManager().getSchemeRegistry().register(new Scheme("https", new EasySSLSocketFactory(), 6984));
+        			return httpClient;
         		}
-        	} else {
-        		Log.d(TAG, "Touchdb exists. Checking Syncpoint status.");	    	
-        	}
+        	});
+        	sessionData.setListener(new TDListener(sessionData.getServer(), 8888));
+        	sessionData.getListener().start();
+        	TDView.setCompiler(new TDJavaScriptViewCompiler());
+        } catch (IOException e) {
+        	Log.e(TAG, "Unable to create TDServer", e);
+        }
 
-        	//** Syncpoint	**//*
+        String ipAddress = "0.0.0.0";
+        Log.d(TAG, ipAddress);
+        String host = ipAddress;
+        int port = 8888;
+        sessionData.setUrl("http://" + host + ":" + Integer.toString(port) + "/");
 
+        //uiHandler = new Handler();
+        sessionData.setAppDb(properties.getProperty("app_db"));
+        sessionData.setCouchAppInstanceUrl(properties.getProperty("couchAppInstanceUrl"));
+        File destination = new File(sessionData.getFilesDir() + File.separator + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
+        String masterServer = properties.getProperty("master_server");
+        if (masterServer != null) {
+        	Constants.serverURLString = masterServer;
+        	//Constants.replicationURL = masterServer + "/" + appDb;
+        	Log.d(TAG, "Disabled Constants.replicationURL: no replication.");
+        	//Log.d(TAG, "replicationURL: " + Constants.replicationURL);
+        }
+
+        String syncpointAppId = properties.getProperty("syncpoint_app_id");
+        if (syncpointAppId != null) {
+        	Constants.syncpointAppId = syncpointAppId;
+        }
+        String syncpointDefaultChannelName = properties.getProperty("syncpoint_default_channel");
+        if (syncpointDefaultChannelName != null) {
+        	Constants.syncpointDefaultChannelName = syncpointDefaultChannelName;
+        }
+
+        Log.d(TAG, "Checking for touchdb at " + sessionData.getFilesDir() + File.separator + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
+        if (!destination.exists()) {
+        	Log.d(TAG, "Touchdb does not exist. Installing.");
+        	// must be in the assets directory
         	try {
-        		sessionData.setMasterServerUrl(new URL(masterServer));
-        	} catch (MalformedURLException e) {
+        		//db.replaceWithDatabase(appDb + TOUCHDB_DATABASE_SUFFIX, appDb);
+        		AssetManager assetManager = this.getAssets();
+        		// This is the appDb touchdb
+        		CoconutUtils.copyFileOrDir(assetManager, sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX, sessionData.getFilesDir());
+        		// These are the appDb attachments
+        		CoconutUtils.copyFileOrDir(assetManager, sessionData.getAppDb(), sessionData.getFilesDir());
+        		// This is the mobilefuton touchdb
+        		CoconutUtils.copyFileOrDir(assetManager, "mobilefuton" + TOUCHDB_DATABASE_SUFFIX, sessionData.getFilesDir());
+        		// These are the mobilefuton attachments
+        		CoconutUtils.copyFileOrDir(assetManager, "mobilefuton", sessionData.getFilesDir());
+        	} catch (Exception e) {
         		e.printStackTrace();
+        		String errorMessage = "There was an error extracting the database.";
+        		//displayLargeMessage(errorMessage, "big");
+        		Log.d(TAG, errorMessage);
+        		//progressDialog.setMessage(errorMessage);
+        		mainView.loadUrl("file:///android_asset/www/error.html");
         	}
-        	Log.d(TAG, "Syncpoint masterServerUrl: " + sessionData.getMasterServerUrl());
-        	try {
-        		// Check if there is already a pairing session in-use.
-        		HttpClient httpClient = new TouchDBHttpClient(sessionData.getServer());
-        		CouchDbInstance localServer = new StdCouchDbInstance(httpClient);
-        		sessionData.setLocalServer(localServer);
-        		//CouchDbConnector userDb = localServer.createConnector("_users", false);
-        		sessionData.setLocalControlDatabase(localServer.createConnector(SyncpointClientImpl.LOCAL_CONTROL_DATABASE_NAME, false));
-        		sessionData.setSession(SyncpointSession.sessionInDatabase(getApplicationContext(), localServer, sessionData.getLocalControlDatabase()));
-        		if((sessionData.getSession()!= null) && (!sessionData.getSession().isPaired())) {
-        			final PairingUser pairingUser = sessionData.getSession().getPairingUser();		    		
-        			if ((pairingUser != null) && (sessionData.getSelectedAccount() != null) && (sessionData.getSession().isReadyToPair())) {
-        				Log.v(TAG, "Pairing still in-progress");
+        } else {
+        	Log.d(TAG, "Touchdb exists. Checking Syncpoint status.");	    	
+        }
 
-        				HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(sessionData.getMasterServerUrl()).relaxedSSLSettings(true)
-        						.username(sessionData.getSession().getPairingCreds().getUsername()).password(sessionData.getSession().getPairingCreds().getPassword()).maxConnections(100).build();
+        //** Syncpoint	**//*
 
-        				//.url(masterServerUrl).username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
-        				CouchDbInstance remote = new StdCouchDbInstance(remoteHttpClient);
-        				final CouchDbConnector userDb = remote.createConnector("_users", false);
-        				EktorpAsyncTask task = new EktorpAsyncTask() {
+        try {
+        	sessionData.setMasterServerUrl(new URL(masterServer));
+        } catch (MalformedURLException e) {
+        	e.printStackTrace();
+        }
+        Log.d(TAG, "Syncpoint masterServerUrl: " + sessionData.getMasterServerUrl());
+        try {
+        	// Check if there is already a pairing session in-use.
+        	HttpClient httpClient = new TouchDBHttpClient(sessionData.getServer());
+        	CouchDbInstance localServer = new StdCouchDbInstance(httpClient);
+        	sessionData.setLocalServer(localServer);
+        	//CouchDbConnector userDb = localServer.createConnector("_users", false);
+        	sessionData.setLocalControlDatabase(localServer.createConnector(SyncpointClientImpl.LOCAL_CONTROL_DATABASE_NAME, false));
+        	sessionData.setSession(SyncpointSession.sessionInDatabase(getApplicationContext(), localServer, sessionData.getLocalControlDatabase()));
+        	if((sessionData.getSession()!= null) && (!sessionData.getSession().isPaired())) {
+        		final PairingUser pairingUser = sessionData.getSession().getPairingUser();		    		
+        		if ((pairingUser != null) && (sessionData.getSelectedAccount() != null) && (sessionData.getSession().isReadyToPair())) {
+        			Log.v(TAG, "Pairing still in-progress");
 
-        					PairingUser result = null;
+        			HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(sessionData.getMasterServerUrl()).relaxedSSLSettings(true)
+        					.username(sessionData.getSession().getPairingCreds().getUsername()).password(sessionData.getSession().getPairingCreds().getPassword()).maxConnections(100).build();
 
-        					@Override
-        					protected void doInBackground() {
-        						result = userDb.get(PairingUser.class, pairingUser.getId());
-        					}
+        			//.url(masterServerUrl).username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
+        			CouchDbInstance remote = new StdCouchDbInstance(remoteHttpClient);
+        			final CouchDbConnector userDb = remote.createConnector("_users", false);
+        			EktorpAsyncTask task = new EktorpAsyncTask() {
 
-        					@Override
-        					protected void onSuccess() {
-        						waitForPairingToComplete(userDb, result);
-        					}
+        				PairingUser result = null;
 
-        				};
+        				@Override
+        				protected void doInBackground() {
+        					result = userDb.get(PairingUser.class, pairingUser.getId());
+        				}
 
-        				task.execute();
-        			} else {
-        				sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getMasterServerUrl(), Constants.syncpointAppId));
-        			}
+        				@Override
+        				protected void onSuccess() {
+        					waitForPairingToComplete(userDb, result);
+        				}
+
+        			};
+
+        			task.execute();
         		} else {
         			sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getMasterServerUrl(), Constants.syncpointAppId));
         		}
-        	} catch (org.ektorp.UpdateConflictException e1) {
-        		Log.v(TAG, "Error: " + e1);
-        	} catch (DbAccessException e1) {
-        		Log.e( TAG, "Error: " , e1);
-        		e1.printStackTrace();
-        		Toast.makeText(this, "Error: Unable to connect to Syncpoint Server: " + e1.getMessage(), Toast.LENGTH_LONG).show();
+        	} else {
+        		sessionData.setSyncpoint(new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getMasterServerUrl(), Constants.syncpointAppId));
         	}
-        //}
+        } catch (org.ektorp.UpdateConflictException e1) {
+        	Log.v(TAG, "Error: " + e1);
+        } catch (DbAccessException e1) {
+        	Log.e( TAG, "Error: " , e1);
+        	e1.printStackTrace();
+        	Toast.makeText(this, "Error: Unable to connect to Syncpoint Server: " + e1.getMessage(), Toast.LENGTH_LONG).show();
+        }
 	    	
         SyncpointChannel channel = null;
         if (sessionData.getSession() != null) {
@@ -357,87 +328,38 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 	    
         //mainView.loadUrl("file:///android_asset/www/index.html");
     }
-	
-	private class CustomWebViewClient extends CordovaWebViewClient {
-	/*	public CustomWebViewClient(CordovaInterface cordova) {
-			super(cordova);
-		}*/
-		
-		public CustomWebViewClient(DroidGap ctx) {
-			super(ctx);
+
+	public class CustomCordovaWebViewClient extends CordovaWebViewClient {
+
+		public CustomCordovaWebViewClient(CordovaInterface ctx, CordovaWebView view) {
+			super(ctx, view);
 		}
 
 		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (url.startsWith("tel:")) {
-				Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
-				startActivity(intent);
-			} else if (url.startsWith("http:") || url.startsWith("https:")) {
-				view.loadUrl(url);
-			}
-			return true;
+		public void onPageStarted(WebView view, String url, Bitmap bitmap) {
+			super.onPageStarted(view, url, bitmap);
+			Log.i("TEST", "onPageStarted: " + url);
 		}
-		
-		@Override
-		public void onPageStarted(WebView view, String url, Bitmap favicon) {
-			super.onPageStarted(view, url, favicon);
-			Log.i("BugTest", "onPageStarted: " + url);
-		}
-		
+
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
-			Log.i("BugTest", "onPageFinished: " + url);
-            if (MainActivity.this.progressDialog != null) {
-           	 MainActivity.this.progressDialog.dismiss();
-            }
-        }
-		
-		 @Override
-		 public void doUpdateVisitedHistory(WebView view, String url, boolean isReload){  
-		     super.doUpdateVisitedHistory(view, url, isReload);  
-		 }
-
-		 @Override
-		 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-		     super.onReceivedError(view, errorCode, description, failingUrl);
-		 }
-		
-	}
-	
-	public class CustomCordovaWebViewClient extends CordovaWebViewClient {
-
-		 public CustomCordovaWebViewClient(CordovaInterface ctx, CordovaWebView view) {
-		   super(ctx, view);
-		 }
-
-		 @Override
-		 public void onPageStarted(WebView view, String url, Bitmap bitmap) {
-		   super.onPageStarted(view, url, bitmap);
-		   Log.i("TEST", "onPageStarted: " + url);
-		 }
-
-		 @Override
-		 public void onPageFinished(WebView view, String url) {
-		   super.onPageFinished(view, url);
-		   Log.i("TEST", "onPageFinished: " + url);
-		   if (MainActivity.this.progressDialog != null) {
-			   MainActivity.this.progressDialog.dismiss();
-		   }
-		 }
-
-		 @Override
-		 public void doUpdateVisitedHistory(WebView view, String url, boolean isReload){  
-		     super.doUpdateVisitedHistory(view, url, isReload);  
-		 }
-
-		 @Override
-		 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-		     super.onReceivedError(view, errorCode, description, failingUrl);
-		 }
-
+			Log.i("TEST", "onPageFinished: " + url);
+			if (MainActivity.this.progressDialog != null) {
+				MainActivity.this.progressDialog.dismiss();
+			}
 		}
-	
+
+		@Override
+		public void doUpdateVisitedHistory(WebView view, String url, boolean isReload){  
+			super.doUpdateVisitedHistory(view, url, isReload);  
+		}
+
+		@Override
+		public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+			super.onReceivedError(view, errorCode, description, failingUrl);
+		}
+	}
 
 	@Override
 	@Deprecated
