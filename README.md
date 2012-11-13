@@ -1,15 +1,19 @@
 ## Andromeda
 
-Andromeda is a demo of TouchDB and Syncpoint using Cordova, Couchapp, TodoMVC, and ActionBarSherlock. It is an extension of [Android Couchbase Callback](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
+Andromeda is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
 app, which has been modified to work as a [Backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate) project. 
 It is based upon [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback).
 
 The [TodoMVC](https://github.com/addyosmani/todomvc) project serves as a demonstration of popular javascript MV* frameworks. 
 I am using TodoMVC as a generic project called [couchabb](https://github.com/chrisekelley/couchabb) to help assess TouchDB-Android performance. 
- 
-You may also use this app to deploy a <a href="http://couchapp.org/">CouchApp</a> to an Android device 
-using <a href="https://github.com/couchbaselabs/TouchDB-Android">TouchDB-Android</a> and 
-<a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>.
+
+The Account Registration screen, which is used for registering the device on the Syncpoint server, uses the [AccountList-Phonegap-Android-Plugin](https://github.com/seltzlab/AccountList-Phonegap-Android-Plugin).
+
+## What does it do?
+
+This app installs two Couchapps on the mobile device, a Todos task list example and the Mobilefuton Couch admin app. The app demonstrates the process of requesting a user on the remote Syncpoint server, approving the new user, and creation of the user's database on the local device and the remote server. Records are replicated between the device and server.
+
+In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut-MobileFuton), an earlier iteration of this app, I used native Android widgets and code for functions such as Account registration; I'm moving those operations to Cordova, with the goal of coding more HTML and Javascript.
 
 ## Requirements
 
@@ -50,7 +54,7 @@ My instructions are for Eclipse. There are instructions for non-Eclipse users in
 
 5.  Debug as Android application. I'm currently deploying directly to a Galaxy Nexus running Jellybean.
 6.  TouchDB is now running. The account registration screen will appear. Choose the Google account you wish to associate with this app. 
-7.  [TodoMVC](https://github.com/addyosmani/todomvc) app will display. Sometimes the app will not display; check for the following message:
+7.  TodoMVC app will display. Sometimes the app will not display; check for the following message:
 
         05-11 17:36:00.251: D/CordovaLog(2647): Error: Load timeout for modules: use 
 
@@ -62,11 +66,15 @@ My instructions are for Eclipse. There are instructions for non-Eclipse users in
         V/SyncpointClient(24203): Checking to see if pairing completed...
         V/SyncpointClient(24203): Pairing state is stuck at new
 
-	Go to your Syncpoint Admin Console and approve the new user. See the listing of new users in the right column marked "Needs Admin Approval to Pair."
+	You may add new records to the Todos app. Go to your Syncpoint Admin Console and approve the new user. See the listing of new users in the right column marked "Needs Admin Approval to Pair."
 
-	When you approve the new user, you'll see all sorts of messages in LogCat. This is setting up local database and the user db on the server.
+	When you approve the new user, you'll see all sorts of messages in LogCat. This is setting up local database and the user db on the server. This will also copy any records you already created in the local db to a new db, which will be replicated with the new user's db on the Syncpoint server.
 
 10. Create a new Todo. Watch LogCat. It will push the new record almost immediately. Refresh the Syncpoint Admin Console and click the Channels link for this new user. Click View data. It should have replicated your new record.  
+
+11. There is a refresh button in the title bar that will initiate the sync process. Sometimes continuous replication will cease; this button helps. 
+
+12. The [Mobilefuton](https://github.com/daleharvey/mobilefuton) couchapp is included. In the browser, go to http://localhost:8888/mobilefuton/_design/mobilefuton/index.html
 
 
 ### Distribution
@@ -75,30 +83,30 @@ These are tips that will help when you package your own app.
 
 1.  Copy the database off the device and into this Android application's assets directory. To keep the filesystem clean, first create a directory named your_couchapp in your project assets dir. In the console, cd to that directory. Run the following commmand:
 
-	adb pull /data/data/com.couchbase.callback/files/your_couchapp
+	    adb pull /data/data/com.couchbase.callback/files/your_couchapp
 	
-This should have put an attachments directory in that directory. 
+    This should have put an attachments directory in that directory. 
 
 2. Now cd up one directory (to your assets dir) and run the following command:
 	
-	adb pull /data/data/com.couchbase.callback/files/your_couchapp.touchdb
+	    adb pull /data/data/com.couchbase.callback/files/your_couchapp.touchdb
     
 3. Edit res/raw/coconut.properties and change coconut-sample to the name of your couchapp and adjust the couchAppInstanceUrl. Note that you can also change the port in this file.
 
-    app_db=coconut-sample
-    couchAppInstanceUrl=_design/coconut/index.html    
+        app_db=coconut-sample
+        couchAppInstanceUrl=_design/coconut/index.html    
 	
 3.  Repackage your application with the database file included
 
-    ant debug
+        ant debug
 
 4.  Reinstall the application to launch the CouchApp
 
-    adb uninstall com.couchbase.callback
+        adb uninstall com.kinotel.andromeda
 
-    adb install bin/AndroidCouchbaseCallback-debug.apk
+        adb install bin/AndroidCouchbaseCallback-debug.apk
 
-    adb shell am start -n com.couchbase.callback/.AndroidCouchbaseCallback
+        adb shell am start -n com.couchbase.callback/.AndroidCouchbaseCallback
 
 
 ## Assumptions
