@@ -17,9 +17,9 @@ In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut
 
 ## Screenshots
 
-![Registration](../Andromeda/master/docs/register_50.png) 
-![Registration process](../Andromeda/master/docs/register2_50.png) 
-![Home](../Andromeda/master/docs/home_50.png) 
+![Registration](https://raw.github.com/chrisekelley/Andromeda/master/docs/register_50.png) 
+![Registration process](https://raw.github.com/chrisekelley/Andromeda/master/docs/register2_50.png) 
+![Home](https://raw.github.com/chrisekelley/Andromeda/master/docs/home_50.png) 
 
 ## Requirements
 
