@@ -22,25 +22,15 @@ public class SessionData implements Serializable {
 	private static final long serialVersionUID = -3125889331914899630L;
 	private Account selectedAccount;
 	private boolean registered;
-	private SyncpointClient syncpoint;
-	private SyncpointSession session;
-	private CouchDbConnector localControlDatabase;
-	private TDServer server;
-	private TDListener listener;
-	private TDDatabase newDb;
+
 	private String localSyncpointDbName;
 	private String url;
 	private String appDb;
 	private String couchAppInstanceUrl;
 	private String filesDir;
-	private SyncpointInstallation syncpointInstallation;
 	private String couchAppUrl;
-	private CouchDbInstance localServer;
-	private URL masterServerUrl;
 
-	public SessionData(TDServer server) {
-		this.server = server;
-	}
+	private URL remoteServerURL;
 
 	public Account getSelectedAccount() {
 		return selectedAccount;
@@ -58,53 +48,7 @@ public class SessionData implements Serializable {
 		this.registered = registered;
 	}
 
-	public SyncpointClient getSyncpoint() {
-		return syncpoint;
-	}
-
-	public void setSyncpoint(SyncpointClient syncpoint) {
-		this.syncpoint = syncpoint;
-	}
-
-	public SyncpointSession getSession() {
-		return session;
-	}
-
-	public void setSession(SyncpointSession session) {
-		this.session = session;
-	}
-
-	public CouchDbConnector getLocalControlDatabase() {
-		return localControlDatabase;
-	}
-
-	public void setLocalControlDatabase(CouchDbConnector localControlDatabase) {
-		this.localControlDatabase = localControlDatabase;
-	}
-
-	public TDServer getServer() {
-		return server;
-	}
-
-	public void setServer(TDServer server) {
-		this.server = server;
-	}
-
-	public TDListener getListener() {
-		return listener;
-	}
-
-	public void setListener(TDListener listener) {
-		this.listener = listener;
-	}
-
-	public TDDatabase getNewDb() {
-		return newDb;
-	}
-
-	public void setNewDb(TDDatabase newDb) {
-		this.newDb = newDb;
-	}
+	
 
 	public String getLocalSyncpointDbName() {
 		return localSyncpointDbName;
@@ -146,14 +90,6 @@ public class SessionData implements Serializable {
 		this.filesDir = filesDir;
 	}
 
-	public SyncpointInstallation getSyncpointInstallation() {
-		return syncpointInstallation;
-	}
-
-	public void setSyncpointInstallation(SyncpointInstallation syncpointInstallation) {
-		this.syncpointInstallation = syncpointInstallation;
-	}
-
 	public String getCouchAppUrl() {
 		return couchAppUrl;
 	}
@@ -162,19 +98,12 @@ public class SessionData implements Serializable {
 		this.couchAppUrl = couchAppUrl;
 	}
 
-	public CouchDbInstance getLocalServer() {
-		return localServer;
+	public URL getRemoteServerURL() {
+		return remoteServerURL;
 	}
 
-	public void setLocalServer(CouchDbInstance localServer) {
-		this.localServer = localServer;
+	public void setRemoteServerURL(URL remoteServerURL) {
+		this.remoteServerURL = remoteServerURL;
 	}
 
-	public URL getMasterServerUrl() {
-		return masterServerUrl;
-	}
-
-	public void setMasterServerUrl(URL masterServerUrl) {
-		this.masterServerUrl = masterServerUrl;
-	}
 }
