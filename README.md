@@ -15,6 +15,12 @@ This app installs two Couchapps on the mobile device, a Todos task list example 
 
 In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut-MobileFuton), an earlier iteration of this app, I used native Android widgets and code for functions such as Account registration; I'm moving those operations to Cordova, with the goal of coding more HTML and Javascript.
 
+## Screenshots
+
+![Registration](docs/register_50.png) 
+![Registration process](docs/register2_50.png) 
+![Home](docs/home_50.png) 
+
 ## Requirements
 
 This project requires the latest version of the Android SDK. If you already have the SDK tools, 
