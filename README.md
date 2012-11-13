@@ -23,13 +23,6 @@ curl -d @assets/couchabb.json -X PUT http://admin:party@localhost:5984/couchabb/
 
 Install [Syncpoint](http://www.couchbase.com/wiki/display/couchbase/Mobile+Syncpoint).
 
-Start syncpoint:
-
-[chrisk@mbp:~]$ cd source                                                                                         
-[chrisk@mbp:~/source]$ npm start syncpoint
-
-browse Syncpoint Admin Console at this URL:
-http://localhost:5984/sp_admin/_design/console/index.html
 
 ## Getting Started
 
@@ -43,23 +36,42 @@ My instructions are for Eclipse. There are instructions for non-Eclipse users in
 1.  Clone this repository
 2.  Edit res/raw/coconut.properties to point to your Syncpoint installation:
 
-master_server=http://192.168.0.50:5984/
+        master_server=http://192.168.0.50:5984/
 
-2.  Debug as Android application. I'm currently deploying directly to a Galaxy Nexus running Jellybean.
-3.  TouchDB is now running. The account registration screen will appear. Choose the Google account you wish to associate with this app. 
-4.  [TodoMVC](https://github.com/addyosmani/todomvc) app will display. 
+3.  Populate your local CouchDB instance using assets/couchabb.json:
 
-Sometimes the app will not display; check for the following message:
-    05-11 17:36:00.251: D/CordovaLog(2647): Error: Load timeout for modules: use 
-This issue happens in Android 2.2 emulator; Android 2.3 works fine. 
+        curl -XPUT http://admin:party@localhost:5984/couchabb
+        curl -d @assets/couchabb.json -X PUT http://admin:party@localhost:5984/couchabb/_design/couchabb -H "Content-type: application/json"
 
-5. If you view logs within LogCat, it will throw an error while it is trying to setup the user database in Syncpoint if it is not available or not pointed to in coconut.properties. 
-6. After selecting the account, the log will display:
+4. Start syncpoint:
 
-V/SyncpointClient(24203): Checking to see if pairing completed...
-V/SyncpointClient(24203): Pairing state is stuck at new
+        [chrisk@mbp:~]$ cd source                                                                                         
+        [chrisk@mbp:~/source]$ npm start syncpoint
 
-Go to your Syncpoint console and approve the new user.
+    It will display the url to your Syncpoint Admin Console:
+
+        browse Syncpoint Admin Console at this URL:
+        http://localhost:5984/sp_admin/_design/console/index.html
+
+5.  Debug as Android application. I'm currently deploying directly to a Galaxy Nexus running Jellybean.
+6.  TouchDB is now running. The account registration screen will appear. Choose the Google account you wish to associate with this app. 
+7.  [TodoMVC](https://github.com/addyosmani/todomvc) app will display. Sometimes the app will not display; check for the following message:
+
+        05-11 17:36:00.251: D/CordovaLog(2647): Error: Load timeout for modules: use 
+
+    This issue happens in Android 2.2 emulator; Android 2.3 works fine. 
+
+8. If you view logs within LogCat, it will throw an error while it is trying to setup the user database in Syncpoint if it is not available or not pointed to in coconut.properties. 
+9. After selecting the account, the log will display:
+
+        V/SyncpointClient(24203): Checking to see if pairing completed...
+        V/SyncpointClient(24203): Pairing state is stuck at new
+
+	Go to your Syncpoint Admin Console and approve the new user. See the listing of new users in the right column marked "Needs Admin Approval to Pair."
+
+	When you approve the new user, you'll see all sorts of messages in LogCat. This is setting up local database and the user db on the server.
+
+10. Create a new Todo. Watch LogCat. It will push the new record almost immediately. Refresh the Syncpoint Admin Console and click the Channels link for this new user. Click View data. It should have replicated your new record.  
 
 
 ### Distribution
