@@ -17,12 +17,7 @@ This project requires the latest version of the Android SDK. If you already have
 you can upgrade by running `android update sdk`, if you don't have them, you can 
 [install via this link](http://developer.android.com/sdk/installing.html)
 
-You also must have CouchDB installed and populate it using assets/couchabb.json
-curl -XPUT http://admin:party@localhost:5984/couchabb
-curl -d @assets/couchabb.json -X PUT http://admin:party@localhost:5984/couchabb/_design/couchabb -H "Content-type: application/json"
-
-Install [Syncpoint](http://www.couchbase.com/wiki/display/couchbase/Mobile+Syncpoint).
-
+You also must have CouchDB and [Syncpoint](http://www.couchbase.com/wiki/display/couchbase/Mobile+Syncpoint) installed.
 
 ## Getting Started
 
