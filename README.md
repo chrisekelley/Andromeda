@@ -1,19 +1,27 @@
 ## Andromeda
 
-Andromeda is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
+Andromeda demonstrates how to manage the user registration and management process using Syncpoint-Android. It is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
 app, which has been modified to work as a [Backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate) project. 
 It is based upon [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback).
 
 The [TodoMVC](https://github.com/addyosmani/todomvc) project serves as a demonstration of popular javascript MV* frameworks. 
-I am using TodoMVC as a generic project called [couchabb](https://github.com/chrisekelley/couchabb) to help assess TouchDB-Android performance. 
+I am using TodoMVC as a generic project called [couchabb](https://github.com/chrisekelley/couchabb) to help assess TouchDB-Android performance. Couchabb also uses [backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate).
 
 The Account Registration screen, which is used for registering the device on the Syncpoint server, uses the [AccountList-Phonegap-Android-Plugin](https://github.com/seltzlab/AccountList-Phonegap-Android-Plugin).
 
 ## What does it do?
 
-This app installs two Couchapps on the mobile device, a Todos task list example and the Mobilefuton Couch admin app. The app demonstrates the process of requesting a user on the remote Syncpoint server, approving the new user, and creation of the user's database on the local device and the remote server. Records are replicated between the device and server.
+It demonstrates how to manage the user registration and management process using Syncpoint-Android. After the user registers an email address, the app goes through the process of requesting a user on the remote Syncpoint server. Once the admin approves the user on the Syncpoint server, the app creates the user's database on the local device that will replicate with the remote server. 
 
-In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut-MobileFuton), an earlier iteration of this app, I used native Android widgets and code for functions such as Account registration; I'm moving those operations to Cordova, with the goal of coding more HTML and Javascript.
+This app installs two Couchapps on the mobile device, a Todos task list example and the Mobilefuton Couch admin app. The Todos app is displayed after the user submits the initial registration form.
+
+If you know how to make a Couchapp, or are willing to learn, you could use Andromeda as an Android wrapper for your html code.
+
+## How is this different from previous iterations of your Couch-related Android projects? 
+
+In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut-MobileFuton), an earlier iteration of this app, I used native Android widgets and code for functions such as Account registration; I'm moving those operations to Cordova, with the goal of coding more HTML and Javascript. 
+
+Rebecca Murphy wrote a great article called [A Baseline for Front-End Developers](http://rmurphey.com/blog/2012/04/12/a-baseline-for-front-end-developers/) that helped push me a bit further into improving my front-end skills. My goal is to incorporate some of these best practices into my workflow and projects.
 
 ## Screenshots
 
