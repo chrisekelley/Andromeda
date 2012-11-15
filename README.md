@@ -32,11 +32,21 @@ Rebecca Murphy wrote a great article called [A Baseline for Front-End Developers
 ## Quick Test 
 
 If you just want to check out the Andromeda app and how Syncpoint works:
+
 1. Install the [Andromeda APK](https://github.com/chrisekelley/Andromeda/raw/master/bin/Andromeda.apk) on your Android device.
 2. Launch Andromeda, choose the account you wish to register.
-3. Go to the [Andromeda Syncpoint Admin site](http://andromeda.iriscouch.com/sp_admin/_design/console/index.html) and click the "approval workflow" link on the right side of the page for the account you created. I'm running the Andromeda Admin Syncpoint site as admin party, so you don't need to login. Please be nice.
+3. Go to the [Andromeda Syncpoint Admin site](http://andromeda.iriscouch.com/sp_admin/_design/console/index.html) and click the "approval workflow" link on the right side of the page for the account you created. 
 
-![Admin Syncpoint approval workflow screenshot](https://raw.github.com/chrisekelley/Andromeda/master/docs/syncpoint_approval_workflow.png) 
+
+    ![Admin Syncpoint approval workflow screenshot](https://raw.github.com/chrisekelley/Andromeda/master/docs/syncpoint_approval_workflow.png) 
+    
+    On the "Verify Pairing" screen, please ignore the part about verification and "code should be displayed on the device." part. Just click the "Yes, let's connect" button. Choose "create a new one." Enter a real name and click "Create user and pair." You'll need to refresh the page in order to see the new account.
+
+    I'm running the Andromeda Admin Syncpoint site as admin party, so you don't need to login. 
+    **** Please be nice. ****
+
+4. Locate your account on the All Users list. Click Channels, and the View Data. The records that were already in Andromeda and any that you added should be listed in your channel. (Wait a few minutes for it to sync if not).
+5. The Andromeda [Syncpoint-API node.js app](https://github.com/chrisekelley/Syncpoint-API) runs on Nodejitsu and is a fork of Couchbase's Syncpoint-API (https://github.com/couchbaselabs/Syncpoint-API). It periodically (every second?) checks the Andromeda Syncpoint Admin site's CouchDB on iriscouch for new users (with org.couchdb.user:pairing prefixes in their id) in the [__users database](http://andromeda.iriscouch.com/_utils/database.html?_users). If the user has been paired, it uses the CouchDB REST API to create a control database and channel database for the new user. It also creates a continuous replication record in the [_replicator](http://andromeda.iriscouch.com/_utils/database.html?_replicator) database for that user's control database. 
 
 ## Software Development Requirements
 
