@@ -29,7 +29,16 @@ Rebecca Murphy wrote a great article called [A Baseline for Front-End Developers
 ![Registration process](https://raw.github.com/chrisekelley/Andromeda/master/docs/register2_50.png) 
 ![Home](https://raw.github.com/chrisekelley/Andromeda/master/docs/home_50.png) 
 
-## Requirements
+## Quick Test 
+
+If you just want to check out the Andromeda app and how Syncpoint works:
+1. Install the [Andromeda APK](https://github.com/chrisekelley/Andromeda/raw/master/bin/Andromeda.apk) on your Android device.
+2. Launch Andromeda, choose the account you wish to register.
+3. Go to the [Andromeda Syncpoint Admin site](http://andromeda.iriscouch.com/sp_admin/_design/console/index.html) and click the "approval workflow" link on the right side of the page for the account you created. I'm running the Andromeda Admin Syncpoint site as admin party, so you don't need to login. Please be nice.
+
+![Admin Syncpoint approval workflow screenshot](https://raw.github.com/chrisekelley/Andromeda/master/docs/syncpoint_approval_workflow.png) 
+
+## Software Development Requirements
 
 This project requires the latest version of the Android SDK. If you already have the SDK tools, 
 you can upgrade by running `android update sdk`, if you don't have them, you can 
@@ -47,9 +56,11 @@ In this mode you can continually couchapp push your changes in for test.  The se
 My instructions are for Eclipse. There are instructions for non-Eclipse users in the  [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback#getting-started) README.
 
 1.  Clone this repository
-2.  Edit res/raw/coconut.properties to point to your Syncpoint installation:
+2.  Edit res/raw/coconut.properties to point to your CouchDB installation's base URL (including port):
 
         master_server=http://192.168.0.50:5984/
+        
+    Important - you must include the server port, even if it's the default http port (80).
 
 3.  Populate your local CouchDB instance using assets/couchabb.json:
 
@@ -58,8 +69,8 @@ My instructions are for Eclipse. There are instructions for non-Eclipse users in
 
 4. Start syncpoint:
 
-        [chrisk@mbp:~]$ cd source                                                                                         
-        [chrisk@mbp:~/source]$ npm start syncpoint
+        cd source                                                                                         
+        npm start syncpoint
 
     It will display the url to your Syncpoint Admin Console:
 
