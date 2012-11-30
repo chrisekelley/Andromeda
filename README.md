@@ -9,6 +9,8 @@ I am using TodoMVC as a generic project called [couchabb](https://github.com/chr
 
 The Account Registration screen, which is used for registering the device on the Syncpoint server, uses the [AccountList-Phonegap-Android-Plugin](https://github.com/seltzlab/AccountList-Phonegap-Android-Plugin).
 
+The [todos4all](https://github.com/chrisekelley/todos4all) couchapp provides a listing of records from each approved database. Here's the [todos4all Couchapp in action](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Thanks alot, Iris Couch!
+
 ## What does it do?
 
 It demonstrates how to manage the user registration and management process using Syncpoint-Android. After the user registers an email address, the app goes through the process of requesting a user on the remote Syncpoint server. Once the admin approves the user on the Syncpoint server, the app creates the user's database on the local device that will replicate with the remote server. 
@@ -47,6 +49,7 @@ If you just want to check out the Andromeda app and how Syncpoint works:
 
 4. Locate your account on the All Users list. Click Channels, and the View Data. The records that were already in Andromeda and any that you added should be listed in your channel. (Wait a few minutes for it to sync if not).
 5. The Andromeda [Syncpoint-API node.js app](https://github.com/chrisekelley/Syncpoint-API) runs on Nodejitsu and is a fork of Couchbase's [Syncpoint-API](https://github.com/couchbaselabs/Syncpoint-API). It periodically (every second?) checks the Andromeda Syncpoint Admin site's CouchDB on iriscouch for new users (with org.couchdb.user:pairing prefixes in their id) in the [_users database](http://andromeda.iriscouch.com/_utils/database.html?_users). If the user has been paired, it uses the CouchDB REST API to create a control database and channel database for the new user. It also creates a continuous replication record in the [_replicator](http://andromeda.iriscouch.com/_utils/database.html?_replicator) database for that user's control database. This is how the sync process happens automagically.
+6. To view your records on the server, go to the [todos4all Couchapp](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Select your user from the dropdown. I created a new design document for andromeda in the _users database that has a view  in order to populate the dropdown; the code is in docs/_design_andromeda.js.
 
 ## Software Development Requirements
 
@@ -111,6 +114,7 @@ My instructions are for Eclipse. There are instructions for non-Eclipse users in
 
 12. The [Mobilefuton](https://github.com/daleharvey/mobilefuton) couchapp is included. In the browser, go to http://localhost:8888/mobilefuton/_design/mobilefuton/index.html
 
+13. I am using a fork of Syncpoint-API that added an extra design doc to each user database that has views that triggers indexing of new records so they may be viewed in the todos4all Couchapp. The modifications are in [/lib/userChannelControl.js](https://github.com/chrisekelley/Syncpoint-API/blob/71484d23cd863dab3cf07395a5c7de7495bb0236/lib/userChannelControl.js).
 
 ### Distribution
 
