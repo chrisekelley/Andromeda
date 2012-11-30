@@ -49,7 +49,11 @@ If you just want to check out the Andromeda app and how Syncpoint works:
 
 4. Locate your account on the All Users list. Click Channels, and the View Data. The records that were already in Andromeda and any that you added should be listed in your channel. (Wait a few minutes for it to sync if not).
 5. The Andromeda [Syncpoint-API node.js app](https://github.com/chrisekelley/Syncpoint-API) runs on Nodejitsu and is a fork of Couchbase's [Syncpoint-API](https://github.com/couchbaselabs/Syncpoint-API). It periodically (every second?) checks the Andromeda Syncpoint Admin site's CouchDB on iriscouch for new users (with org.couchdb.user:pairing prefixes in their id) in the [_users database](http://andromeda.iriscouch.com/_utils/database.html?_users). If the user has been paired, it uses the CouchDB REST API to create a control database and channel database for the new user. It also creates a continuous replication record in the [_replicator](http://andromeda.iriscouch.com/_utils/database.html?_replicator) database for that user's control database. This is how the sync process happens automagically.
-6. To view your records on the server, go to the [todos4all Couchapp](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Select your user from the dropdown. I created a new design document for andromeda in the _users database that has a view  in order to populate the dropdown; the code is in docs/_design_andromeda.js.
+6. To view your records on the server, go to the [todos4all Couchapp](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Select your user from the dropdown. 
+
+    ![Registration](https://raw.github.com/chrisekelley/Andromeda/master/docs/todos_couchapp_select_name.png)
+    
+    I created a new design document (named _design/andromeda) that is added to the _users database. It has a view in order to populate the dropdown; the code is in docs/_design_andromeda.js.
 
 ## Software Development Requirements
 
