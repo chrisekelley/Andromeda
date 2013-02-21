@@ -153,6 +153,8 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
 
         //uiHandler = new Handler();
         sessionData.setAppDb(properties.getProperty("app_db"));
+        TDDatabase touchdb = server.getDatabaseNamed("mydb");
+        touchdb.open();
         sessionData.setCouchAppInstanceUrl(properties.getProperty("couchAppInstanceUrl"));
         File destination = new File(sessionData.getFilesDir() + File.separator + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
         String masterServer = properties.getProperty("master_server");        
@@ -195,113 +197,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
         } else {
         	Log.d(TAG, "Touchdb exists. Checking Syncpoint status.");	    	
         }
-
-        //** Syncpoint	**//*
-
-        try {
-        	// Check if there is already a pairing session in-use.
-        	HttpClient httpClient = new TouchDBHttpClient(server);
-        	localServer = new StdCouchDbInstance(httpClient);
-        	localControlDatabase = localServer.createConnector(SyncpointClientImpl.LOCAL_CONTROL_DATABASE_NAME, false);
-        	
-        	/*
-        	session = SyncpointSession.sessionInDatabase(getApplicationContext(), localServer, localControlDatabase);
-        	Log.d(TAG, "Check if there is already a pairing session in-use.");
-        	if((session != null) && (!session.isPaired())) {
-        		final PairingUser pairingUser = session.getPairingUser();		    		
-        		//if ((pairingUser != null) && (sessionData.getSelectedAccount() != null) && (session.isReadyToPair())) {
-        		if ((pairingUser != null) && (!"paired".equals(pairingUser.getPairingState()))) {
-        			Log.v(TAG, "Pairing still in-progress. Creating CouchDbConnector for userDb.");
-        			HttpClient remoteHttpClient = new AndroidHttpClient.Builder().url(sessionData.getRemoteServerURL()).relaxedSSLSettings(true)
-        					.username(session.getPairingCreds().getUsername()).password(session.getPairingCreds().getPassword()).maxConnections(100).build();
-        			CouchDbInstance remote = new StdCouchDbInstance(remoteHttpClient);
-        			final CouchDbConnector userDb = remote.createConnector("_users", false);
-
-        			//waitForPairingToComplete(userDb, pairingUser);
-        			EktorpAsyncTask task = new EktorpAsyncTask() {
-        				PairingUser result = null;
-        				@Override
-        				protected void doInBackground() {
-        					Log.v(TAG, "Populating the userDb.");
-							result = userDb.get(PairingUser.class, pairingUser.getId());
-        				}
-        				
-        				@Override
-        				protected void onDbAccessException(DbAccessException dbAccessException) {
-        					// TODO: Send toast message
-        					Log.e(TAG, "Error populating the userDb: ",dbAccessException);
-        				}
-        				
-        				@Override
-        				protected void onSuccess() {
-        					Log.v(TAG, "Now waitForPairingToComplete.");
-        					waitForPairingToComplete(userDb, result);
-        				}
-        			};
-        			task.execute();
-        		} else {
-        			syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getRemoteServerURL(), Constants.syncpointAppId);
-        		}
-        	} else {
-        		syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getRemoteServerURL(), Constants.syncpointAppId);
-        	}
-        	*/
-			syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getRemoteServerURL(), Constants.syncpointAppId);
-
-        	
-        } catch (org.ektorp.UpdateConflictException e1) {
-        	Log.v(TAG, "Error: " + e1);
-        } catch (DbAccessException e1) {
-        	Log.e( TAG, "Error: " , e1);
-        	e1.printStackTrace();
-        	Toast.makeText(this, "Error: Unable to connect to Syncpoint Server: " + e1.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        
-    	Log.d(TAG, "Syncpoint is populated. Checking SyncpointInstallation status.");
-	    	
-        SyncpointChannel channel = null;
-        if (session != null) {
-        	channel = session.getMyChannel(Constants.syncpointDefaultChannelName);
-        } else {
-        	if (syncpoint != null) {
-        		channel = syncpoint.getMyChannel(Constants.syncpointDefaultChannelName);
-        	}
-        }
-        
-        syncpointInstallation = channel.getInstallation(getApplicationContext());
-        
-        if(syncpointInstallation != null) {
-        	CouchDbConnector localDatabase = syncpointInstallation.getLocalDatabase(getApplicationContext());
-        	String localDatabaseName = localDatabase.getDatabaseName();
-        	Log.v(TAG, "localDatabaseName: " + localDatabaseName);
-        	newDb = server.getDatabaseNamed(localDatabaseName);
-        	newDb.open();
-
-        	long designDocId = newDb.getDocNumericID("_design/couchabb");
-
-        	if (designDocId < 1) {
-        		try {
-        			newDb.replaceWithDatabase(sessionData.getFilesDir() + "/" + sessionData.getAppDb(),  sessionData.getFilesDir() + "/" + sessionData.getAppDb() + TOUCHDB_DATABASE_SUFFIX);
-        		} catch (IOException e) {
-        			// TODO Auto-generated catch block
-        			e.printStackTrace();
-        		}
-        		Log.d(TAG, "Launching Account Selector.");
-        		startAccountSelector();
-        	} else {
-        		sessionData.setLocalSyncpointDbName(localDatabaseName);
-        		String couchAppUrl = sessionData.getUrl() + sessionData.getAppDb() + "/" + sessionData.getCouchAppInstanceUrl();
-        		if (newDb != null) {
-        			couchAppUrl = sessionData.getUrl() + sessionData.getLocalSyncpointDbName() + "/" + sessionData.getCouchAppInstanceUrl();
-        		}
-        		sessionData.setCouchAppUrl(couchAppUrl);
-        		Log.d( TAG, "Loading couchAppUrl: " + couchAppUrl );
-        		mainView.loadUrl(sessionData.getCouchAppUrl());
-        	}
-        } else {
-        	Log.d(TAG, "Launching Account Selector.");
-        	startAccountSelector();
-        }
+        mainView.loadUrl("file:///android_asset/www/index.html");
     }
     
     @Override

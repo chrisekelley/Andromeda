@@ -1,6 +1,17 @@
 ## Andromeda
 
-Andromeda demonstrates how to manage the user registration and management process using Syncpoint-Android. It is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
+Andromeda demonstrates how to manage the user registration and management process using Couchbase Sync Gateway and Couchbase Server. Andromeda is built on Syncpoint, an older sync framework; I am still in the process of bootstrapping this new one. Ignore any mentions of Syncpoint.
+
+Quick setup:
+
+1. launch Couchbase
+2. Install Sync Gateway and configure. In Terminal, enter sync_gateway
+3. In another terminal tab, cd to your project source code dir. 
+4. Enter SYNC_HOSTNAME=192.168.0.60 node assets/server/serve.js
+
+Unedited notes follow:
+
+It is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
 app, which has been modified to work as a [Backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate) project. 
 It is based upon [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback).
 
