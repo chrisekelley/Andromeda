@@ -211,8 +211,7 @@ public class MainActivity extends SherlockActivity implements CordovaInterface {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	//This uses the imported MenuItem from ActionBarSherlock
-    	//Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
-    	syncpoint = new SyncpointClientImpl(getApplicationContext(), localServer, sessionData.getRemoteServerURL(), Constants.syncpointAppId);
+    	Toast.makeText(this, "Got click: " + item.toString(), Toast.LENGTH_SHORT).show();
     	return true;
     }
 

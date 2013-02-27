@@ -1,32 +1,28 @@
 ## Andromeda
 
-Andromeda demonstrates how to manage the user registration and management process using Couchbase Sync Gateway and Couchbase Server. Andromeda is built on Syncpoint, an older sync framework; I am still in the process of bootstrapping this new one. Ignore any mentions of Syncpoint.
+Andromeda is an Android app that runs a chat example application that demonstrates user signup, login, and data synchronization using using Couchbase Sync Gateway and Couchbase Server on the backend. 
 
 Quick setup:
 
 1. launch Couchbase
-2. Install Sync Gateway and configure. In Terminal, enter sync_gateway
+2. Install Sync Gateway and configure. Launch it in Terminal by entering:
+	sync_gateway
 3. In another terminal tab, cd to your project source code dir. 
-4. Enter SYNC_HOSTNAME=192.168.0.60 node assets/server/serve.js
+4. Enter:
+	SYNC_HOSTNAME=192.168.0.60 node assets/server/serve.js
 
-Unedited notes follow:
 
-It is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Syncpoint-Android](https://github.com/couchbaselabs/Syncpoint-Android) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), [TodoMVC](https://github.com/addyosmani/todomvc), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which is a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
+## Elements of Andromeda
+Andromeda is a demo of [TouchDB-Android](https://github.com/couchbaselabs/TouchDB-Android) and [Sync Gateway](https://github.com/couchbaselabs/sync_gateway) using <a href="http://incubator.apache.org/projects/callback.html">Apache Cordova (formerly PhoneGap)</a>, [Couchapp](http://couchapp.org), the chat example from [CouchbaseGap](https://github.com/couchbaselabs/CouchbaseGap.git), and [ActionBarSherlock](http://actionbarsherlock.com/). It is an extension of [Android-TouchDB-Cordova](https://github.com/chrisekelley/Android-TouchDB-Cordova#android-couchbase-callback), which hosts a demonstration of the [TodoMVC backbone-require](https://github.com/addyosmani/todomvc/tree/master/dependency-examples/backbone_require) 
 app, which has been modified to work as a [Backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate) project. 
 It is based upon [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback).
 
 The [TodoMVC](https://github.com/addyosmani/todomvc) project serves as a demonstration of popular javascript MV* frameworks. 
-I am using TodoMVC as a generic project called [couchabb](https://github.com/chrisekelley/couchabb) to help assess TouchDB-Android performance. Couchabb also uses [backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate).
-
-The Account Registration screen, which is used for registering the device on the Syncpoint server, uses the [AccountList-Phonegap-Android-Plugin](https://github.com/seltzlab/AccountList-Phonegap-Android-Plugin).
-
-The [todos4all](https://github.com/chrisekelley/todos4all) couchapp provides a listing of records from each approved database. Here's the [todos4all Couchapp in action](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Thanks alot, Iris Couch!
+I am using TodoMVC as a generic project called [couchabb](https://github.com/chrisekelley/couchabb) to help assess TouchDB-Android performance. Couchabb also uses [backbone boilerplate](https://github.com/tbranyen/backbone-boilerplate). The current version does not have couchabb installed, but will soon.
 
 ## What does it do?
 
-It demonstrates how to manage the user registration and management process using Syncpoint-Android. After the user registers an email address, the app goes through the process of requesting a user on the remote Syncpoint server. Once the admin approves the user on the Syncpoint server, the app creates the user's database on the local device that will replicate with the remote server. 
-
-This app installs two Couchapps on the mobile device, a Todos task list example and the Mobilefuton Couch admin app. The Todos app is displayed after the user submits the initial registration form.
+It runs a chat example application that demonstrates how user signup, login, and data synchronization using Couchbase Sync Gateway. 
 
 If you know how to make a Couchapp, or are willing to learn, you could use Andromeda as an Android wrapper for your html code.
 
@@ -36,36 +32,6 @@ In [Android-Coconut-MobileFuton](https://github.com/chrisekelley/Android-Coconut
 
 Rebecca Murphy wrote a great article called [A Baseline for Front-End Developers](http://rmurphey.com/blog/2012/04/12/a-baseline-for-front-end-developers/) that helped push me a bit further into improving my front-end skills. My goal is to incorporate some of these best practices into my workflow and projects.
 
-## Screenshots
-
-![Registration](https://raw.github.com/chrisekelley/Andromeda/master/docs/register_50.png) 
-![Registration process](https://raw.github.com/chrisekelley/Andromeda/master/docs/register2_50.png) 
-![Home](https://raw.github.com/chrisekelley/Andromeda/master/docs/home_50.png) 
-
-## Quick Test 
-
-If you just want to check out the Andromeda app and how Syncpoint works:
-
-1. Install the [Andromeda APK](https://github.com/chrisekelley/Andromeda/raw/master/bin/Andromeda.apk) on your Android device.
-2. Launch Andromeda, choose the account you wish to register.
-3. Go to the [Andromeda Syncpoint Admin site](http://andromeda.iriscouch.com/sp_admin/_design/console/index.html) and click the "approval workflow" link on the right side of the page for the account you created. 
-
-
-    ![Admin Syncpoint approval workflow screenshot](https://raw.github.com/chrisekelley/Andromeda/master/docs/syncpoint_approval_workflow.png) 
-    
-    On the "Verify Pairing" screen, please ignore the part about verification and "code should be displayed on the device." part. Just click the "Yes, let's connect" button. Choose "create a new one." Enter a real name and click "Create user and pair." You'll need to refresh the page in order to see the new account.
-
-    I'm running the Andromeda Admin Syncpoint site as admin party, so you don't need to login. 
-    **** Please be nice. ****
-
-4. Locate your account on the All Users list. Click Channels, and the View Data. The records that were already in Andromeda and any that you added should be listed in your channel. (Wait a few minutes for it to sync if not).
-5. The Andromeda [Syncpoint-API node.js app](https://github.com/chrisekelley/Syncpoint-API) runs on Nodejitsu and is a fork of Couchbase's [Syncpoint-API](https://github.com/couchbaselabs/Syncpoint-API). It periodically (every second?) checks the Andromeda Syncpoint Admin site's CouchDB on iriscouch for new users (with org.couchdb.user:pairing prefixes in their id) in the [_users database](http://andromeda.iriscouch.com/_utils/database.html?_users). If the user has been paired, it uses the CouchDB REST API to create a control database and channel database for the new user. It also creates a continuous replication record in the [_replicator](http://andromeda.iriscouch.com/_utils/database.html?_replicator) database for that user's control database. This is how the sync process happens automagically.
-6. To view your records on the server, go to the [todos4all Couchapp](http://andromeda.iriscouch.com/todos4all/_design/todos4all/index.html). Select your user from the dropdown. 
-
-    ![Registration](https://raw.github.com/chrisekelley/Andromeda/master/docs/todos_couchapp_select_name.png)
-    
-    I created a new design document (named _design/andromeda) that is added to the _users database. It has a view in order to populate the dropdown; the code is in docs/_design_andromeda.js.
-
 ## Software Development Requirements
 
 This project requires the latest version of the Android SDK. If you already have the SDK tools, 
@@ -74,64 +40,8 @@ you can upgrade by running `android update sdk`, if you don't have them, you can
 
 You also must have CouchDB and [Syncpoint](http://www.couchbase.com/wiki/display/couchbase/Mobile+Syncpoint) installed.
 
-## Getting Started
 
-These instructions are divided into two sections, the first describes the development mode.  
-In this mode you can continually couchapp push your changes in for test.  The second describes distribution mode where you package your application for distribution.
-
-### Development
-
-My instructions are for Eclipse. There are instructions for non-Eclipse users in the  [Android-Couchbase-Callback] (https://github.com/couchbaselabs/Android-Couchbase-Callback#getting-started) README.
-
-1.  Clone this repository
-2.  Edit res/raw/coconut.properties to point to your CouchDB installation's base URL (including port):
-
-        master_server=http://192.168.0.50:5984/
-        
-    Important - you must include the server port, even if it's the default http port (80).
-
-3.  Populate your local CouchDB instance using assets/couchabb.json:
-
-        curl -XPUT http://admin:party@localhost:5984/couchabb
-        curl -d @assets/couchabb.json -X PUT http://admin:party@localhost:5984/couchabb/_design/couchabb -H "Content-type: application/json"
-
-4. Start syncpoint:
-
-        cd source                                                                                         
-        npm start syncpoint
-
-    It will display the url to your Syncpoint Admin Console:
-
-        browse Syncpoint Admin Console at this URL:
-        http://localhost:5984/sp_admin/_design/console/index.html
-
-5.  Debug as Android application. I'm currently deploying directly to a Galaxy Nexus running Jellybean.
-6.  TouchDB is now running. The account registration screen will appear. Choose the Google account you wish to associate with this app. 
-7.  TodoMVC app will display. Sometimes the app will not display; check for the following message:
-
-        05-11 17:36:00.251: D/CordovaLog(2647): Error: Load timeout for modules: use 
-
-    This issue happens in Android 2.2 emulator; Android 2.3 works fine. 
-
-8. If you view logs within LogCat, it will throw an error while it is trying to setup the user database in Syncpoint if it is not available or not pointed to in coconut.properties. 
-9. After selecting the account, the log will display:
-
-        V/SyncpointClient(24203): Checking to see if pairing completed...
-        V/SyncpointClient(24203): Pairing state is stuck at new
-
-	You may add new records to the Todos app. Go to your Syncpoint Admin Console and approve the new user. See the listing of new users in the right column marked "Needs Admin Approval to Pair."
-
-	When you approve the new user, you'll see all sorts of messages in LogCat. This is setting up local database and the user db on the server. This will also copy any records you already created in the local db to a new db, which will be replicated with the new user's db on the Syncpoint server.
-
-10. Create a new Todo. Watch LogCat. It will push the new record almost immediately. Refresh the Syncpoint Admin Console and click the Channels link for this new user. Click View data. It should have replicated your new record.  
-
-11. There is a refresh button in the title bar that will initiate the sync process. Sometimes continuous replication will cease; this button helps. 
-
-12. The [Mobilefuton](https://github.com/daleharvey/mobilefuton) couchapp is included. In the browser, go to http://localhost:8888/mobilefuton/_design/mobilefuton/index.html
-
-13. I am using a fork of Syncpoint-API that added an extra design doc to each user database that has views that triggers indexing of new records so they may be viewed in the todos4all Couchapp. The modifications are in [/lib/userChannelControl.js](https://github.com/chrisekelley/Syncpoint-API/blob/71484d23cd863dab3cf07395a5c7de7495bb0236/lib/userChannelControl.js).
-
-### Distribution
+## Distribution
 
 These are tips that will help when you package your own app.
 
